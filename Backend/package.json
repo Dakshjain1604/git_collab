@@ -13,7 +13,11 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "express": "^5.1.0",
+<<<<<<< HEAD
     "jsonwebtoken": "^9.0.2",
     "zod": "^4.1.12"
+=======
+    "jsonwebtoken": "^9.0.2"
+>>>>>>> 45f82b1bcc4523395ede7e905c797626d5cd35e7
   }
 }
