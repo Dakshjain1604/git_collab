@@ -39,34 +39,34 @@ exports.signUp = async (req, res) => {
     }
 };
 
-const signinBody = zod.object({
-    username: zod.string().email(),
-    password: zod.string(),
-  });
-  exports.loginUser = async (req, res) => {
-    const parsed = signinBody.safeParse(req.body);
-    if (!parsed.success) return res.status(411).json({ message: "Incorrect inputs" });
-    try {
-      const { username, password } = req.body;
-      let findUser;
+// const signinBody = zod.object({
+//     username: zod.string().email(),
+//     password: zod.string(),
+//   });
+//   exports.loginUser = async (req, res) => {
+//     const parsed = signinBody.safeParse(req.body);
+//     if (!parsed.success) return res.status(411).json({ message: "Incorrect inputs" });
+//     try {
+//       const { username, password } = req.body;
+//       let findUser;
 
-      if (cachedUser) {
-        findUser = JSON.parse(cachedUser);
-      } else {
-        findUser = await user.findOne({ username });
-        if (!findUser) return res.status(401).json({ message: "User not found" });
-      }
+//       if (cachedUser) {
+//         findUser = JSON.parse(cachedUser);
+//       } else {
+//         findUser = await user.findOne({ username });
+//         if (!findUser) return res.status(401).json({ message: "User not found" });
+//       }
   
-      const isPasswordCorrect = await bcrypt.compare(password, findUser.password);
-      if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid credentials" });
+//       const isPasswordCorrect = await bcrypt.compare(password, findUser.password);
+//       if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid credentials" });
   
-      const token = jwt.sign({ id: findUser._id }, JWT_SECRET, { expiresIn: "1h" });
-      return res.json({ token });
+//       const token = jwt.sign({ id: findUser._id }, JWT_SECRET, { expiresIn: "1h" });
+//       return res.json({ token });
   
-    } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Internal server error" });
-    }
-  };
+//     } catch (err) {
+//       console.error(err);
+//       return res.status(500).json({ message: "Internal server error" });
+//     }
+//   };
 
 
