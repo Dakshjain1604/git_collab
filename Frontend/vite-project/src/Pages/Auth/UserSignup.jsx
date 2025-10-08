@@ -53,12 +53,15 @@ const UserSignup = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
+    <div className='h-screen w-screen flex flex-col justify-center items-center'>
+      <div className="min-w-100 mx-auto mt-10 p-6 bg-black text-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-semibold mb-6 text-center">Register</h2>
       <form onSubmit={handleSubmit} noValidate>
         {/* API error */}
         {apiError && (
-          <div className="mb-4 text-red-600 text-center">{apiError}</div>
+          <div className="flex flex-row  mb-4 text-red-600 text-center bg-red-200 w-full py-5 text-xl font-bold px-4 rounded-md justify-center items-center "><div className='animate-bounce'>
+                {apiError}!
+            </div></div>
         )}
 
         {/* First Name */}
@@ -169,6 +172,7 @@ const UserSignup = () => {
           Register
         </button>
       </form>
+    </div>
     </div>
   );
 };

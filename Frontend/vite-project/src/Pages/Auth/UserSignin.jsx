@@ -47,7 +47,8 @@ const UserSignin = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-black text-white shadow-lg rounded-lg">
+    <div className='flex flex-col h-screen w-screen justify-center items-center'>
+      <div className="sm:min-w-45 md:min-w-100 mx-auto mt-10 p-6 bg-black text-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-semibold mb-6 text-center">Login</h2>
       <form onSubmit={handleSubmit} noValidate>
         {/* API error */}
@@ -65,7 +66,7 @@ const UserSignin = () => {
             name="email"
             type="email"
             placeholder='JohnDoe@gmail.com'
-            value={email}                                           /* ← added value prop */
+            value={username}                                           /* ← added value prop */
             onChange={(e) => setUsername(e.target.value)}
             className={`w-full px-3 py-2 border rounded ${
               errors.email ? 'border-red-500' : 'border-gray-300'
@@ -104,6 +105,7 @@ const UserSignin = () => {
           Login
         </button>
       </form>
+    </div>
     </div>
   );
 };
