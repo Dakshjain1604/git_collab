@@ -98,8 +98,7 @@ const UserSignin = () => {
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"
-          
+          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"  
         >
           Login
         </button>
