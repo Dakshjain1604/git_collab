@@ -5,6 +5,8 @@ def content_Parse(file):
     reader=PdfReader(file)
     number_of_pages=len(reader.pages)
     page=reader.pages[0]
-    prntpage.extract_text()
-    
+    text=page.extract_text()
+    print(text)
+
+
 
