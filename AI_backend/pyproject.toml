@@ -5,7 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "asyncio>=4.0.0",
+    "dotenv>=0.9.9",
     "fastapi[standard]>=0.118.1",
+    "llama-cloud-services>=0.6.73",
     "pypdf2>=3.0.1",
     "python-multipart>=0.0.20",
 ]
