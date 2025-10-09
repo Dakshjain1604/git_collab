@@ -7,6 +7,6 @@ def content_Parse(file):
     page=reader.pages[0]
     text=page.extract_text()
     print(text)
-
-
-
+    file_path = "my_data.txt"
+    with open(file_path, 'w') as file:
+        file.write(text)
