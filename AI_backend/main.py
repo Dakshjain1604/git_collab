@@ -21,13 +21,11 @@ async def create_file(file: Annotated[bytes, File()]):
 async def upload_file(file:UploadFile=File(...)): 
     file_location=f"Uploaded_files/{file.filename}"
     with open(file_location,"wb+")as file_object:
-        await file_object.write(await file.file_read())
+        file_object.write(await file.read())
         content_Parse(file_location)
         return {"info": f"file '{file.filename}' saved at '{file_location}'"}
-
-
-
-
+    
+    
 
 if __name__ == "__main__":
     main()
