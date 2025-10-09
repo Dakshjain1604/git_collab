@@ -13,7 +13,20 @@ const userSchema=new mongoose.Schema({
 })
 
 
+const resumeSchema = new mongoose.Schema({
+    title : {type :String},
+    summary: {type: String},
+    education: [educationSchema],
+    experience : [experienceSchema],
+    projects : {type : String}
+})
+
+
 const user=mongoose.model("User",userSchema);
 module.exports={
     user
+}
+const resume = mongoose.model("Resume",resumeSchema);
+module.exports={
+    resume
 }

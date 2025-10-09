@@ -70,7 +70,7 @@ const signinBody = zod.object({
   };
 
 
-  exports.updatreuser = async(req, res)=>{
+  exports.updateUser = async(req, res)=>{
     try{
         const {username} = req.body;
         if(!username){
