@@ -25,9 +25,9 @@ const LoadingPage = () => {
 </div>
 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4">
   <SplitText
-    text="DMatch: Tailor Your Resume to Fit Any Job Description"
+    text="DMatch"
     className="text-4xl md:text-6xl font-bold text-center text-white mb-8"
-    delay={40}
+    delay={100}
     duration={0.6}
     ease="power3.out"
     splitType="chars"
@@ -38,7 +38,20 @@ const LoadingPage = () => {
     textAlign="center"
   />
 
-  <p className="text-white/80 text-lg max-w-2xl text-center">
+    <SplitText
+    text="Tailor Your Resume to Fit Any Job Description"
+    className="text-2xl md:text-4xl font-bold text-center text-white mb-8"
+    delay={50}
+    duration={0.6}
+    ease="power3.out"
+    splitType="chars"
+    from={{ opacity: 0, y: 40 }}
+    to={{ opacity: 1, y: 0 }}
+    threshold={0.1}
+    rootMargin="-100px"
+    textAlign="center"
+  />
+  <p className="text-white/80 text-2xl max-w-xl text-center">
     Enhance your chances by customizing your resume to match job criteria.
   </p>
   

@@ -9,13 +9,12 @@ const UserSignin = () => {
   const [password, setpassword] = useState('');
   const [username, setUsername] = useState('');
 
-  const [errors, setErrors] = useState({});         // ← added this
-  const [apiError, setApiError] = useState('');     // optional, for showing API error
+  const [errors, setErrors] = useState({});        
+  const [apiError, setApiError] = useState('');     
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simple validation
     const errs = {};
    
     if (!username.trim()) errs.username = 'Username is required';
@@ -38,8 +37,7 @@ const UserSignin = () => {
         username,
         password,
       });
-      // on success navigate
-      navigate('/user/home');   // use a route path, not full URL
+      navigate('/user/home');   
     } catch (err) {
       console.error(err);
       setApiError(err.response?.data?.message || 'Signup failed');
