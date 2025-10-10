@@ -1,6 +1,6 @@
 from fastapi import FastAPI,File ,UploadFile
 from typing import Annotated
-from app.parse import content_Parse,llama_docu_parsing
+from app.parse import content_parse
 import asyncio
 app=FastAPI()
 
@@ -23,9 +23,8 @@ async def upload_file(file:UploadFile=File(...)):
     file_location=f"Uploaded_files/{file.filename}"
     with open(file_location,"wb+")as file_object:
         file_object.write(await file.read())
-        # content_Parse(file_location)
-        await llama_docu_parsing(file_location)
-        return {"info": f"file '{file.filename}' saved at '{file_location}'"}
+        res=content_parse(file_location)
+        return res
     
     
 

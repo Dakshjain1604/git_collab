@@ -8,7 +8,9 @@ dependencies = [
     "asyncio>=4.0.0",
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.118.1",
+    "fitz>=0.0.1.dev2",
     "llama-cloud-services>=0.6.73",
+    "pymupdf>=1.26.5",
     "pypdf2>=3.0.1",
     "python-multipart>=0.0.20",
 ]
