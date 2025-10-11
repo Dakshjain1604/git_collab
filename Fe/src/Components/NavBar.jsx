@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 
 import GradientText from './GradientText';
 import Background from "./Background.jsx"
+import UserSignin from '../Pages/Auth/UserSignin.jsx';
+import UserIcon from '../assets/icons/UserIcon.jsx';
 const NavBar = () => {
 
 
@@ -25,22 +27,16 @@ const NavBar = () => {
 
 
     <div className="flex justify-end items-center gap-11">
-      <button className="text-white">
+      <button className="text-white hover:cursor-pointer hover:scale-110">
         Home
       </button>
-      <button className="text-white">
+      <button className="text-white hover:cursor-pointer hover:scale-110">
         Features
       </button>
-      <button className="text-white">
+      <button className="text-white hover:cursor-pointer hover:scale-110">
         About
       </button>
-
-      <img
-        className="h-10 w-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-cyan-500 transition-all ml-6"
-        src="/assets/user.png"
-        alt="User Profile"
-        onClick={() => Navigate('/user/profile')}
-      />
+      <UserIcon onClick={() => Navigate('/user/profile')}/>
     </div>
   </div>
 </div>
