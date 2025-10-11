@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-
+import ElectricBorder from '../../public/Reactbits/ElectricBorder.jsx';
 import GradientText from './GradientText';
 import Background from "./Background.jsx"
 const NavBar = () => {
@@ -23,24 +23,59 @@ const NavBar = () => {
       </GradientText>
     </div>
 
-
+    
     <div className="flex justify-end items-center gap-11">
-      <button className="text-white">
+      <ElectricBorder
+  color="#7df9ff"
+  speed={1}
+  chaos={0.5}
+  thickness={2}
+  style={{ borderRadius: 40 }}
+>
+      <button className="text-white m-4">
         Home
-      </button>
-      <button className="text-white">
+      </button></ElectricBorder>
+      <ElectricBorder
+  color="#7df9ff"
+  speed={1}
+  chaos={0.5}
+  thickness={2}
+  style={{ borderRadius: 30 }}
+>
+      <button className="text-white m-4">
         Features
-      </button>
-      <button className="text-white">
+      </button></ElectricBorder>
+       <ElectricBorder
+  color="#7df9ff"
+  speed={1}
+  chaos={0.5}
+  thickness={2}
+  style={{ borderRadius: 30 }}
+>
+      <button className="text-white m-4">
         About
-      </button>
-
-      <img
-        className="h-10 w-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-cyan-500 transition-all ml-6"
-        src="/assets/user.png"
-        alt="User Profile"
-        onClick={() => Navigate('/user/profile')}
-      />
+      </button></ElectricBorder>
+<ElectricBorder
+  color="#7df9ff"
+  speed={1}
+  chaos={0.5}
+  thickness={2}
+  style={{ borderRadius: 30 }}
+>
+     <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-10 h-10 rounded-full m-2"
+      onClick={() => Navigate('/user/profile')}
+    >
+      <circle cx="11" cy="7" r="4" />
+      <path d="M4 21c0-4 4-5 7-5s7 1 7 5" />
+    </svg></ElectricBorder>
     </div>
   </div>
 </div>
