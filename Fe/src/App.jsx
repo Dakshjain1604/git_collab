@@ -6,6 +6,7 @@ import LoadingPage from "./Pages/LoadingPage/LoadingPage";
 import NavBar from "./Components/NavBar";
 import Profile from "./Pages/Profile/Profile";
 import EditProfile from "./Pages/Profile/EditProfile";
+import Dashboard from "./Pages/Dashboard/Dashboard";
 function App() {
   return (
     <BrowserRouter>
@@ -16,6 +17,7 @@ function App() {
         <Route path='/navbar' element={<NavBar/>}/>
         <Route path='/user/profile' element={<Profile/>}/>
         <Route path='/edit/profile' element={<EditProfile/>}/>
+        <Route path='/user/dashboard' element={<Dashboard/>}/>
     </Routes>
     </BrowserRouter>
   )

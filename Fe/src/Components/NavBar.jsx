@@ -10,7 +10,7 @@ const NavBar = () => {
 
   return (
     
-<div className=" m-6 bg-black text-white rounded-md w-min-screen">
+<div className=" m-6 bg-black text-white rounded-md w-min-screen h-1">
   <div className="max-w-8xl mx-auto px-4  py-4 flex items-center justify-between">
 
     <div className="text-4xl font-bold">
