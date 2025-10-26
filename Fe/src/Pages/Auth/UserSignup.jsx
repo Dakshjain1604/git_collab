@@ -44,8 +44,8 @@ const UserSignup = () => {
         email,
         password,
       });
-      // on success navigate
-      navigate('/user/home');   // use a route path, not full URL
+
+      navigate('/user/home');  
     } catch (err) {
       console.error(err);
       setApiError(err.response?.data?.message || 'Signup failed');
@@ -53,15 +53,17 @@ const UserSignup = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
+    <div className='h-screen w-screen flex flex-col justify-center items-center'>
+      <div className="min-w-100 mx-auto mt-10 p-6 bg-black text-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-semibold mb-6 text-center">Register</h2>
       <form onSubmit={handleSubmit} noValidate>
-        {/* API error */}
+
         {apiError && (
-          <div className="mb-4 text-red-600 text-center">{apiError}</div>
+          <div className="flex flex-row  mb-4 text-red-600 text-center bg-red-200 w-full py-5 text-xl font-bold px-4 rounded-md justify-center items-center "><div className='animate-bounce'>
+                {apiError}!
+            </div></div>
         )}
 
-        {/* First Name */}
         <div className="mb-4">
           <label htmlFor="firstName" className="block mb-1 font-medium">
             First Name
@@ -70,7 +72,7 @@ const UserSignup = () => {
             id="firstName"
             name="firstName"
             type="text"
-            value={firstname}                                       /* ← added value prop */
+            value={firstname}                                      
             onChange={(e) => setfirstname(e.target.value)}
             className={`w-full px-3 py-2 border rounded ${
               errors.firstName ? 'border-red-500' : 'border-gray-300'
@@ -81,7 +83,6 @@ const UserSignup = () => {
           )}
         </div>
 
-        {/* Last Name */}
         <div className="mb-4">
           <label htmlFor="lastName" className="block mb-1 font-medium">
             Last Name
@@ -90,7 +91,7 @@ const UserSignup = () => {
             id="lastName"
             name="lastName"
             type="text"
-            value={lastname}                                       /* ← added value prop */
+            value={lastname}                                       
             onChange={(e) => setlastname(e.target.value)}
             className={`w-full px-3 py-2 border rounded ${
               errors.lastName ? 'border-red-500' : 'border-gray-300'
@@ -101,7 +102,6 @@ const UserSignup = () => {
           )}
         </div>
 
-        {/* Username */}
         <div className="mb-4">
           <label htmlFor="username" className="block mb-1 font-medium">
             Username
@@ -110,7 +110,7 @@ const UserSignup = () => {
             id="username"
             name="username"
             type="text"
-            value={username}                                       /* ← added value prop */
+            value={username}                                      
             onChange={(e) => setUsername(e.target.value)}
             className={`w-full px-3 py-2 border rounded ${
               errors.username ? 'border-red-500' : 'border-gray-300'
@@ -121,7 +121,6 @@ const UserSignup = () => {
           )}
         </div>
 
-        {/* Email */}
         <div className="mb-4">
           <label htmlFor="email" className="block mb-1 font-medium">
             Email
@@ -130,7 +129,7 @@ const UserSignup = () => {
             id="email"
             name="email"
             type="email"
-            value={email}                                           /* ← added value prop */
+            value={email}                                          
             onChange={(e) => setemail(e.target.value)}
             className={`w-full px-3 py-2 border rounded ${
               errors.email ? 'border-red-500' : 'border-gray-300'
@@ -141,7 +140,6 @@ const UserSignup = () => {
           )}
         </div>
 
-        {/* Password */}
         <div className="mb-6">
           <label htmlFor="password" className="block mb-1 font-medium">
             Password
@@ -150,7 +148,7 @@ const UserSignup = () => {
             id="password"
             name="password"
             type="password"
-            value={password}                                       /* ← added value prop */
+            value={password}                                       
             onChange={(e) => setpassword(e.target.value)}
             className={`w-full px-3 py-2 border rounded ${
               errors.password ? 'border-red-500' : 'border-gray-300'
@@ -163,12 +161,12 @@ const UserSignup = () => {
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"
-          
+          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"  
         >
           Register
         </button>
       </form>
+    </div>
     </div>
   );
 };

@@ -9,13 +9,12 @@ const UserSignin = () => {
   const [password, setpassword] = useState('');
   const [username, setUsername] = useState('');
 
-  const [errors, setErrors] = useState({});         // ← added this
-  const [apiError, setApiError] = useState('');     // optional, for showing API error
+  const [errors, setErrors] = useState({});        
+  const [apiError, setApiError] = useState('');     
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simple validation
     const errs = {};
    
     if (!username.trim()) errs.username = 'Username is required';
@@ -38,8 +37,7 @@ const UserSignin = () => {
         username,
         password,
       });
-      // on success navigate
-      navigate('/user/home');   // use a route path, not full URL
+      navigate('/user/home');   
     } catch (err) {
       console.error(err);
       setApiError(err.response?.data?.message || 'Signup failed');
@@ -47,7 +45,8 @@ const UserSignin = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-black text-white shadow-lg rounded-lg">
+    <div className='flex flex-col h-screen w-screen justify-center items-center'>
+      <div className="sm:min-w-45 md:min-w-100 mx-auto mt-10 p-6 bg-black text-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-semibold mb-6 text-center">Login</h2>
       <form onSubmit={handleSubmit} noValidate>
         {/* API error */}
@@ -65,7 +64,7 @@ const UserSignin = () => {
             name="email"
             type="email"
             placeholder='JohnDoe@gmail.com'
-            value={email}                                           /* ← added value prop */
+            value={username}                                           /* ← added value prop */
             onChange={(e) => setUsername(e.target.value)}
             className={`w-full px-3 py-2 border rounded ${
               errors.email ? 'border-red-500' : 'border-gray-300'
@@ -98,12 +97,12 @@ const UserSignin = () => {
 
         <button
           type="submit"
-          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"
-          
+          className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 transition"  
         >
           Login
         </button>
       </form>
+    </div>
     </div>
   );
 };
