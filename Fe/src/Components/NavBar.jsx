@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-
+import ElectricBorder from '../../public/Reactbits/ElectricBorder.jsx';
 import GradientText from './GradientText';
 import Background from "./Background.jsx"
 import UserSignin from '../Pages/Auth/UserSignin.jsx';
@@ -12,7 +12,7 @@ const NavBar = () => {
 
   return (
     
-<div className=" m-6 bg-black text-white rounded-md w-min-screen">
+<div className=" m-6 bg-black text-white rounded-md w-min-screen h-1">
   <div className="max-w-8xl mx-auto px-4  py-4 flex items-center justify-between">
 
     <div className="text-4xl font-bold">
@@ -25,18 +25,24 @@ const NavBar = () => {
       </GradientText>
     </div>
 
-
+    
     <div className="flex justify-end items-center gap-11">
-      <button className="text-white hover:cursor-pointer hover:scale-110">
+      <button className="text-white">
         Home
       </button>
-      <button className="text-white hover:cursor-pointer hover:scale-110">
+      <button className="text-white">
         Features
       </button>
-      <button className="text-white hover:cursor-pointer hover:scale-110">
+      <button className="text-white">
         About
       </button>
-      <UserIcon onClick={() => Navigate('/user/profile')}/>
+
+      <img
+        className="h-10 w-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-cyan-500 transition-all ml-6"
+        src="/assets/user.png"
+        alt="User Profile"
+        onClick={() => Navigate('/user/profile')}
+      />
     </div>
   </div>
 </div>

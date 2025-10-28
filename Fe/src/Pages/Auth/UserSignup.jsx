@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+import Plasma from '../../Components/Plasma';
+
 const UserSignup = () => {
   const navigate = useNavigate();
 
@@ -54,6 +56,7 @@ const UserSignup = () => {
 
   return (
     <div className='h-screen w-screen flex flex-col justify-center items-center'>
+ 
       <div className="min-w-100 mx-auto mt-10 p-6 bg-black text-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-semibold mb-6 text-center">Register</h2>
       <form onSubmit={handleSubmit} noValidate>
@@ -167,6 +170,7 @@ const UserSignup = () => {
         </button>
       </form>
     </div>
+
     </div>
   );
 };
