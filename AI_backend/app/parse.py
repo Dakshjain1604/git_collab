@@ -13,27 +13,13 @@ SECTION_HEADERS = [
     "education", "technical_projects", "certifications", "achievements"
 ]
 
+def parse_Content_with_ai(file_path:str):
+    """
+    Parses a resume PDF into structured sections and clean text.
+    Returns both structured dictionary and full text string.
+    """
 
-
-# api_key=os.getenv("LLAMA_CLOUD_API_KEY")
-# parser=LlamaParse(
-#     api_key=api_key,
-#     num_workers=4,
-#     verbose=True,
-#     language="en",
-# )
-
-# async def llama_docu_parsing(file_location):
-#         result = await parser.aparse(file_location)
-#         docs = result.get_text_documents(split_by_page=False)
-#         # if docs is a list, join text
-#         if isinstance(docs, list):
-#             text = "\n".join([d.text if hasattr(d, "text") else str(d) for d in docs])
-#         else:
-#             text = str(docs)
-        
-#         res=split_into_sections(text)
-#         return res
+    
 
 def content_parse(file_path: str):
     """
@@ -41,7 +27,7 @@ def content_parse(file_path: str):
     Returns both structured dictionary and full text string.
     """
 
-    # 1️⃣ Extract text from PDF properly
+  
     text = ""
     with fitz.open(file_path) as doc:
         for page in doc:
