@@ -18,6 +18,7 @@ def parse_Content_with_ai(file_path:str):
     Parses a resume PDF into structured sections and clean text.
     Returns both structured dictionary and full text string.
     """
+    
 
     
 

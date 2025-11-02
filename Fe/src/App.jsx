@@ -17,7 +17,7 @@ function App() {
         <Route path='/navbar' element={<NavBar/>}/>
         <Route path='/user/profile' element={<Profile/>}/>
         <Route path='/edit/profile' element={<EditProfile/>}/>
-        <Route path='/user/dashboard' element={<Dashboard/>}/>
+        <Route path='/user/DashBoard' element={<Dashboard/>}/>
     </Routes>
     </BrowserRouter>
   )
