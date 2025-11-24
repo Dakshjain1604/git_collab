@@ -1,0 +1,102 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7
+    container_name: resume-analyzer-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: resume_analyzer
+    networks:
+      - resume-analyzer-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # AI Backend (FastAPI)
+  ai-backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.ai-backend
+    container_name: resume-analyzer-ai-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../AI_backend/Uploaded_files:/app/Uploaded_files
+      - ../AI_backend/.env:/app/.env:ro
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - resume-analyzer-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Backend (Express.js)
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: resume-analyzer-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../Backend/.env:/app/.env:ro
+    environment:
+      - MONGODB_URL=mongodb://mongodb:27017/resume_analyzer
+      - NODE_ENV=production
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      ai-backend:
+        condition: service_healthy
+    networks:
+      - resume-analyzer-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    container_name: resume-analyzer-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - ai-backend
+    networks:
+      - resume-analyzer-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  resume-analyzer-network:
+    driver: bridge
+

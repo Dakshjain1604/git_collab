@@ -1,53 +1,82 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import ElectricBorder from '../../public/Reactbits/ElectricBorder.jsx';
-import GradientText from './GradientText';
-import Background from "./Background.jsx"
-import UserSignin from '../Pages/Auth/UserSignin.jsx';
-import UserIcon from '../assets/icons/UserIcon.jsx';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import GradientText from "./GradientText";
+import { User2Icon } from "lucide-react";
+
 const NavBar = () => {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
 
-
-  const Navigate = useNavigate();
+  const handleFeatureScroll = () => {
+    navigate("/");
+    setTimeout(() => {
+      const section = document.getElementById("features-section");
+      if (section) section.scrollIntoView({ behavior: "smooth" });
+    }, 150);
+  };
 
   return (
-    
-<div className=" m-6 bg-black text-white rounded-md w-min-screen h-1">
-  <div className="max-w-8xl mx-auto px-4  py-4 flex items-center justify-between">
+    <nav className="w-full px-6 py-4 bg-transparent">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        
+        {/* Logo */}
+        <div className="text-4xl font-bold cursor-pointer" onClick={() => navigate("/")}>
+          <GradientText
+            colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
+            animationSpeed={3}
+            showBorder={false}
+          >
+            Dmatch
+          </GradientText>
+        </div>
 
-    <div className="text-4xl font-bold">
-      <GradientText
-        colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
-        animationSpeed={3}
-        showBorder={false}
-      >
-        Dmatch
-      </GradientText>
-    </div>
+        {/* Desktop Menu */}
+        <div className="hidden md:flex items-center gap-6">
+          <button
+            onClick={() => navigate("/")}
+            className="text-white hover:text-cyan-400 transition-colors"
+          >
+            Home
+          </button>
 
-    
-    <div className="flex justify-end items-center gap-11">
-      <button className="text-white">
-        Home
-      </button>
-      <button className="text-white">
-        Features
-      </button>
-      <button className="text-white">
-        About
-      </button>
+          <button
+            onClick={handleFeatureScroll}
+            className="text-white hover:text-cyan-400 transition-colors"
+          >
+            Features
+          </button>
 
-      <img
-        className="h-10 w-10 rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-cyan-500 transition-all ml-6"
-        src="/assets/user.png"
-        alt="User Profile"
-        onClick={() => Navigate('/user/profile')}
-      />
-    </div>
-  </div>
-</div>
+          <button
+            onClick={() => navigate("/user/DashBoard")}
+            className="text-white hover:text-cyan-400 transition-colors"
+          >
+            Dashboard
+          </button>
 
-  )
-}
+          <User2Icon onClick={() => navigate("/user/profile")}/>
+            
+        </div>
 
-export default NavBar
+        {/* Mobile Hamburger */}
+        <button
+          className="md:hidden text-white"
+          onClick={() => setOpen(!open)}
+        >
+          ☰
+        </button>
+      </div>
+
+      {/* Mobile Dropdown */}
+      {open && (
+        <div className="md:hidden mt-4 flex flex-col gap-4 bg-white/10 backdrop-blur-md p-4 rounded-lg text-white">
+          <button onClick={() => navigate("/")}>Home</button>
+          <button onClick={handleFeatureScroll}>Features</button>
+          <button onClick={() => navigate("/user/DashBoard")}>Dashboard</button>
+          <button onClick={() => navigate("/user/profile")}>Profile</button>
+        </div>
+      )}
+    </nav>
+  );
+};
+
+export default NavBar;

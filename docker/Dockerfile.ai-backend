@@ -1,0 +1,31 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv for faster package management
+RUN pip install uv
+
+# Copy dependency files
+COPY AI_backend/pyproject.toml AI_backend/uv.lock* ./
+
+# Install Python dependencies
+RUN uv sync --frozen || uv sync
+
+# Copy application code
+COPY AI_backend/ .
+
+# Create upload directory
+RUN mkdir -p Uploaded_files
+
+# Expose port
+EXPOSE 8000
+
+# Run the application
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
