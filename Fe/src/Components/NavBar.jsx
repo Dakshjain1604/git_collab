@@ -2,11 +2,10 @@ import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import ElectricBorder from '../../public/Reactbits/ElectricBorder.jsx';
 import GradientText from './GradientText';
-import Background from "./Background.jsx"
 const NavBar = () => {
 
 
-  const Navigate = useNavigate();
+  const navigate = useNavigate();
 
   return (
     
@@ -32,7 +31,7 @@ const NavBar = () => {
   thickness={2}
   style={{ borderRadius: 40 }}
 >
-      <button className="text-white m-4">
+      <button className="text-white m-4" onClick={() => navigate('/user/dashboard')}>
         Home
       </button></ElectricBorder>
       <ElectricBorder
@@ -42,7 +41,7 @@ const NavBar = () => {
   thickness={2}
   style={{ borderRadius: 30 }}
 >
-      <button className="text-white m-4">
+      <button className="text-white m-4" onClick={() => navigate('/user/dashboard#history')}>
         Features
       </button></ElectricBorder>
        <ElectricBorder
@@ -52,7 +51,7 @@ const NavBar = () => {
   thickness={2}
   style={{ borderRadius: 30 }}
 >
-      <button className="text-white m-4">
+      <button className="text-white m-4" onClick={() => navigate('/')}>
         About
       </button></ElectricBorder>
 <ElectricBorder
@@ -71,7 +70,7 @@ const NavBar = () => {
       strokeLinecap="round"
       strokeLinejoin="round"
       className="w-10 h-10 rounded-full m-2"
-      onClick={() => Navigate('/user/profile')}
+      onClick={() => navigate('/user/profile')}
     >
       <circle cx="11" cy="7" r="4" />
       <path d="M4 21c0-4 4-5 7-5s7 1 7 5" />

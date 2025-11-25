@@ -1,72 +1,73 @@
-const { user } = require("../model/db");
-const bcrypt = require('bcrypt');
-const zod = require('zod');
+const z = require("zod");
+const User = require("../model/User");
 
-const signupBody = zod.object({
-    username: zod.string().email(),
-    firstname: zod.string(),
-    lastname: zod.string(),
-    password: zod.string().min(6),  
+const profileSchema = z.object({
+  firstname: z.string().min(1),
+  lastname: z.string().min(1),
+  email: z.string().email(),
+  profile: z
+    .object({
+      headline: z.string().optional(),
+      currentRole: z.string().optional(),
+      location: z.string().optional(),
+      summary: z.string().optional(),
+      skills: z.array(z.string()).optional(),
+      socialLinks: z
+        .object({
+          linkedin: z.string().optional(),
+          github: z.string().optional(),
+          portfolio: z.string().optional(),
+        })
+        .partial()
+        .optional(),
+    })
+    .partial()
+    .optional(),
 });
 
-exports.signUp = async (req, res) => {
-    try {
-
-        const parsed = signupBody.safeParse(req.body);
-        console.log(parsed)
-        console.log(req.body)
-        if (!parsed.success) {
-            return res.status(411).json({ message: "Incorrect inputs" });
-        }
-        const { username, firstname, lastname, password } = req.body;
-        const findUser = await user.findOne({ username });
-        if (findUser) {
-            return res.status(409).json({ message: "User already exists, please login" });
-        }
-        
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await user.create({
-            username,
-            password: hashedPassword,
-            firstname,
-            lastname
-        });
-
-        res.status(201).json({ message: "User created successfully" });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Server error" });
+exports.getCurrentUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+    res.json({ user });
+  } catch (error) {
+    next(error);
+  }
 };
 
-// const signinBody = zod.object({
-//     username: zod.string().email(),
-//     password: zod.string(),
-//   });
-//   exports.loginUser = async (req, res) => {
-//     const parsed = signinBody.safeParse(req.body);
-//     if (!parsed.success) return res.status(411).json({ message: "Incorrect inputs" });
-//     try {
-//       const { username, password } = req.body;
-//       let findUser;
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const parsed = profileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid payload", issues: parsed.error.issues });
+    }
 
-//       if (cachedUser) {
-//         findUser = JSON.parse(cachedUser);
-//       } else {
-//         findUser = await user.findOne({ username });
-//         if (!findUser) return res.status(401).json({ message: "User not found" });
-//       }
-  
-//       const isPasswordCorrect = await bcrypt.compare(password, findUser.password);
-//       if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid credentials" });
-  
-//       const token = jwt.sign({ id: findUser._id }, JWT_SECRET, { expiresIn: "1h" });
-//       return res.json({ token });
-  
-//     } catch (err) {
-//       console.error(err);
-//       return res.status(500).json({ message: "Internal server error" });
-//     }
-//   };
+    const updates = parsed.data;
 
+    const profilePayload = updates.profile ?? {};
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        $set: {
+          firstname: updates.firstname,
+          lastname: updates.lastname,
+          email: updates.email,
+          profile: {
+            ...profilePayload,
+            skills: profilePayload.skills ?? [],
+            socialLinks: profilePayload.socialLinks ?? {},
+          },
+        },
+      },
+      { new: true }
+    ).select("-password");
+
+    res.json({ message: "Profile updated", user });
+  } catch (error) {
+    next(error);
+  }
+};
 

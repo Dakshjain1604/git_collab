@@ -2,7 +2,7 @@ import React from 'react'
 import NavBar from '../../Components/NavBar.jsx'
 import Prism from '../../Components/Prism'
 import { useEffect, useRef, useState } from 'react'
-import axios from 'axios'
+import apiClient from '../../services/apiClient.js'
 
 
 const Dashboard = () => {
@@ -21,7 +21,9 @@ const Dashboard = () => {
   const [backendtext , setBackendText] =useState('');
   const [displayedtext , setDisplayedText] =useState('');
   const [history ,sethistory] = useState([]);
-  const [loading ,setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [jobSuggestions, setJobSuggestions] = useState([]);
+  const [historyLoading ,setHistoryLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error ,setError] = useState(null);
   
@@ -47,17 +49,32 @@ const Dashboard = () => {
     return true;
   };
 
-{/* Below is the code for fetching the data form the backend api using axios and the history of the user using
-  useEffect hook whenever the page loads or the component mounts but there is some confusion related to the hiatsory 
-  fetching part because whenever there is new search then i had to use
-   the useEffect hook again to fetch the new history but i am not sure how to do that so please help me in that*/}
+{/* History is fetched on mount and re-fetched after each successful submission */}
+
+  const formatDate = (value) => {
+    try {
+      return new Date(value).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return value;
+    }
+  };
 
   const fetchHistory = async () => {
     try {
-      const response = await axios.get(''); // replace with  API endpoint where history is fetched 
-      sethistory(response.data);
+      setHistoryLoading(true);
+      const { data } = await apiClient.get('/analysis/history');
+      sethistory(data.items || []);
+      setError(null);
     } catch (err) {
       console.error('Error fetching history:', err.message);
+      setError(err.response?.data?.message || 'Unable to fetch history');
+    } finally {
+      setHistoryLoading(false);
     }
   };
 
@@ -80,7 +97,7 @@ const Dashboard = () => {
     const typeSpeed = 30;  // milliseconds per char
     const timer = setInterval(() => {
       setDisplayedText(prev => prev + backendtext.charAt(i));
-      i++;
+      i++; 
       if (i >= backendtext.length) {
         clearInterval(timer);
       }
@@ -101,16 +118,9 @@ const Dashboard = () => {
   } , [displayedtext])
 
 //handle loading when fetching history
-  if(loading) {
+  if(historyLoading) {
      return <div className='text-white text-xl flex items-center justify-center min-h-screen'> Loading... </div>
   }
-
-  //handle error state
-
-  if (error) {
-    return <div className="text-red-500 flex items-center justify-center min-h-screen">Error: {error}</div>;
-  }
-
 
   // form submit handler 
   // this is 
@@ -129,18 +139,20 @@ const handleSubmit  = async (e) =>{
   try {
     const formData = new FormData();
     formData.append('jdText', searchedText);
-    files.forEach((file, index) => {
-      formData.append('resume', file);
-    });
+    formData.append('resume', files[0]);
 
-    const response = await axios.post('', formData, { // replace with backend api where you will submit the data and analyze it
+    const { data } = await apiClient.post('/analysis', formData, { 
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     });
 
-    const responseData = response.data;
-    setBackendText(responseData.text || responseData.message || JSON.stringify(responseData));
+    const analysisPayload = data.analysis;
+    setAnalysis(analysisPayload);
+    setJobSuggestions(analysisPayload?.jobSuggestions || []);
+
+    const narrative = `Resume Summary:\n${analysisPayload?.resumeSummary || 'N/A'}\n\nJD Summary:\n${analysisPayload?.jdSummary || 'N/A'}\n\nInsights:\n${analysisPayload?.insights || 'No insights yet.'}`;
+    setBackendText(narrative);
     
     // Refetch history after successful submission
     await fetchHistory();
@@ -184,12 +196,17 @@ const handleSubmit  = async (e) =>{
           <NavBar/>
         </div>
         
+        {error && (
+          <div className='mx-3 mb-3 bg-red-500/20 border border-red-400/40 text-red-200 text-center py-3 rounded-2xl'>
+            {error}
+          </div>
+        )}
         {/* Grid Layout */}
         <div className='grid grid-rows-3 grid-cols-6 gap-4 mx-3 mb-3' style={{ height: '860px' }}>
 
 
           {/* below is the component where we will get the history of user */}
-          <div className='col-span-2 row-span-3  rounded-3xl   p-4 overflow-y-auto'>
+          <div id='history' className='col-span-2 row-span-3 rounded-3xl p-4 overflow-y-auto'>
             <h3 className='text-2xl text-white text-center border-2 border-amber-50 rounded-2xl p-2 mb-4'>History</h3>
              {/*Below is the component using the map method to fetch all the history of the user form database*/}
             {history.length === 0 ? (
@@ -200,10 +217,16 @@ const handleSubmit  = async (e) =>{
               </div>
             ) : (
               <div className='space-y-3'>
-                {history.map((item, index) => (
-                  <div key={index} className='bg-white bg-opacity-20 rounded-xl p-3 hover:bg-opacity-30 transition-all cursor-pointer'>
-                    <p className='text-white text-sm font-semibold truncate'>{item.title || `Search ${index + 1}`}</p>
-                    <p className='text-gray-300 text-xs mt-1'>{new Date(item.date).toLocaleDateString()}</p>
+                {history.map((item) => (
+                  <div key={item._id} className='bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg'>
+                    <div className='flex justify-between items-center mb-2'>
+                      <p className='text-white font-semibold'>Score</p>
+                      <span className='text-green-400 font-bold text-lg'>{item.score ?? '--'}%</span>
+                    </div>
+                    <p className='text-gray-200 text-sm mb-2'>
+                      {item.jdSummary || (item.jobDescription ? `${item.jobDescription.slice(0, 120)}...` : 'No description')}
+                    </p>
+                    <p className='text-xs text-gray-400'>{formatDate(item.createdAt)}</p>
                   </div>
                 ))}
               </div>
@@ -266,7 +289,7 @@ const handleSubmit  = async (e) =>{
             const file = selectedFiles[0];
 
             if (validateFile(file)){
-              setFiles((prev)=> [...prev , file]);
+              setFiles([file]);
             }
             e.target.value = '';
           }}
@@ -324,12 +347,59 @@ const handleSubmit  = async (e) =>{
           when the user will search for the jd and attach the resume*/}
 
           
-          <div className='col-span-1 row-span-3 rounded-2xl flex items-center justify-center bg-white bg-opacity-10 p-4'>
+          <div className='col-span-1 row-span-3 rounded-2xl p-4 bg-white/5 backdrop-blur-lg border border-white/10 flex flex-col gap-6'>
             <div className='text-white text-center'>
-              <h3 className='text-2xl font-bold mb-4'>Score Analysis</h3>
-              <div className='text-gray-300 text-sm'>
-                <p>Pie chart and score tally will be displayed here after analysis</p>
+              <h3 className='text-2xl font-bold mb-2'>Match Score</h3>
+              <div className='text-5xl font-extrabold text-green-400'>
+                {analysis ? `${analysis.score}%` : '--'}
               </div>
+              <p className='text-xs text-gray-400 mt-1'>Based on resume vs JD skills</p>
+            </div>
+            <div>
+              <h4 className='text-white font-semibold mb-2'>Missing Keywords</h4>
+              {analysis?.missingKeywords?.length ? (
+                <ul className='flex flex-wrap gap-2'>
+                  {analysis.missingKeywords.slice(0,5).map((kw) => (
+                    <li key={kw} className='text-xs px-3 py-1 bg-red-500/20 text-red-200 rounded-full'>
+                      {kw}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className='text-gray-400 text-sm'>Upload a resume to view gaps.</p>
+              )}
+            </div>
+            <div>
+              <h4 className='text-white font-semibold mb-2'>Recommended Skills</h4>
+              {analysis?.recommendedSkills?.length ? (
+                <ul className='flex flex-wrap gap-2'>
+                  {analysis.recommendedSkills.slice(0,5).map((skill) => (
+                    <li key={skill} className='text-xs px-3 py-1 bg-emerald-500/20 text-emerald-200 rounded-full'>
+                      {skill}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className='text-gray-400 text-sm'>Recommendations will appear here.</p>
+              )}
+            </div>
+            <div className='overflow-y-auto'>
+              <h4 className='text-white font-semibold mb-2'>Job Suggestions</h4>
+              {jobSuggestions.length === 0 ? (
+                <p className='text-gray-400 text-sm'>Submit a JD to get live job leads.</p>
+              ) : (
+                <ul className='space-y-3'>
+                  {jobSuggestions.map((job) => (
+                    <li key={job.url} className='bg-black/30 rounded-xl p-3 border border-white/5'>
+                      <p className='text-white font-semibold'>{job.title}</p>
+                      <p className='text-gray-300 text-sm'>{job.company} • {job.location}</p>
+                      <a className='text-cyan-300 text-xs' href={job.url} target='_blank' rel='noreferrer'>
+                        View role →
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>

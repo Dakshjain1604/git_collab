@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../../services/apiClient.js';
+import { useAuth } from '../../Context/AuthContext.jsx';
 
 const UserSignin = () => {
   const navigate = useNavigate();
 
 
+  const { setUser, setToken } = useAuth();
   const [password, setpassword] = useState('');
   const [username, setUsername] = useState('');
 
@@ -34,15 +36,16 @@ const UserSignin = () => {
 // Provide backend API enpoint below 
 
     try {
-      await axios.post('', {
-        
+      const { data } = await apiClient.post('/auth/login', {
         username,
         password,
       });
-      navigate('/user/home');   
+      setToken(data.token);
+      setUser(data.user);
+      navigate('/user/dashboard');   
     } catch (err) {
       console.error(err);
-      setApiError(err.response?.data?.message || 'Signup failed');
+      setApiError(err.response?.data?.message || 'Login failed');
     }
   };
 
@@ -69,11 +72,11 @@ const UserSignin = () => {
             value={username}                                           /* ← added value prop */
             onChange={(e) => setUsername(e.target.value)}
             className={`w-full px-3 py-2 border rounded ${
-              errors.email ? 'border-red-500' : 'border-gray-300'
+              errors.username ? 'border-red-500' : 'border-gray-300'
             } focus:outline-none focus:ring-2 focus:ring-indigo-400`}
           />
-          {errors.email && (
-            <p className="text-sm text-red-500 mt-1">{errors.email}</p>
+          {errors.username && (
+            <p className="text-sm text-red-500 mt-1">{errors.username}</p>
           )}
         </div>
 

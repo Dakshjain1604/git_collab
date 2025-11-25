@@ -1,19 +1,22 @@
-const mongoose=require("mongoose");
-const { string } = require("zod");
-require('dotenv').config();
-mongoose.connect(process.env.MONGODB_URL)
+const mongoose = require("mongoose");
+require("dotenv").config();
 
+const connectDB = async () => {
+  const dbUri = process.env.MONGODB_URL;
 
+  if (!dbUri) {
+    throw new Error("MONGODB_URL is missing. Please add it to your .env file.");
+  }
 
-const userSchema=new mongoose.Schema({
-    firstname:String,
-    lastname:String,
-    username:{type:String,unique:true},
-    password:{type:String}
-})
+  try {
+    await mongoose.connect(dbUri, {
+      autoIndex: true,
+    });
+    console.log("✅ MongoDB connection established");
+  } catch (err) {
+    console.error("❌ MongoDB connection failed", err);
+    throw err;
+  }
+};
 
-
-const user=mongoose.model("User",userSchema);
-module.exports={
-    user
-}
+module.exports = connectDB;

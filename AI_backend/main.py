@@ -1,35 +1,36 @@
-from fastapi import FastAPI,File ,UploadFile
-from typing import Annotated
+import os
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from app.parse import content_Parse
-app=FastAPI()
 
-def main():
-    print("Hello from ai-backend!")
+app = FastAPI(title="DMatch AI Backend", version="1.0.0")
 
-@app.get('/')
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173").split(",")
+
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=[origin.strip() for origin in allowed_origins],
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
+)
+
+
+@app.get("/")
 async def read_root():
-    return {"message":"hello from py backend"}
-
-@app.post("/files/")
-async def create_file(file: Annotated[bytes, File()]):
-    
-    return {"file_size": len(file)}
+  return {"message": "hello from py backend"}
 
 
-
-@app.post('/uploadfile')
-async def upload_file(file:UploadFile=File(...)): 
-    file_location=f"Uploaded_files/{file.filename}"
-    with open(file_location,"wb+")as file_object:
-        await file_object.write(await file.file_read())
-        content_Parse(file_location)
-        return {"info": f"file '{file.filename}' saved at '{file_location}'"}
-
-
-
-
-
-if __name__ == "__main__":
-    main()
-
-
+@app.post("/api/analyze")
+async def analyze_resume(
+  resume: UploadFile = File(...),
+  jdText: str = Form(...)
+):
+  try:
+    file_bytes = await resume.read()
+    result = content_Parse(file_bytes, resume.filename, jdText)
+    return result
+  except ValueError as exc:
+    raise HTTPException(status_code=400, detail=str(exc)) from exc
+  except Exception as exc:
+    raise HTTPException(status_code=500, detail="Unable to analyze resume") from exc

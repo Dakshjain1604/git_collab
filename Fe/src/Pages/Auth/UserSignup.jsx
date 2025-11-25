@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
 import Plasma from '../../Components/Plasma';
+import apiClient from '../../services/apiClient.js';
+import { useAuth } from '../../Context/AuthContext.jsx';
 
 const UserSignup = () => {
   const navigate = useNavigate();
 
+  const { setUser, setToken } = useAuth();
   const [firstname, setfirstname] = useState('');
   const [lastname, setlastname] = useState('');
   const [email, setemail] = useState('');
@@ -39,7 +40,7 @@ const UserSignup = () => {
     setApiError('');
 
     try {
-      await axios.post('http://localhost:5173/user/signup', {
+      const { data } = await apiClient.post('/auth/signup', {
         firstname,
         lastname,
         username,
@@ -47,7 +48,9 @@ const UserSignup = () => {
         password,
       });
 
-      navigate('/user/home');  
+      setToken(data.token);
+      setUser(data.user);
+      navigate('/user/dashboard');  
     } catch (err) {
       console.error(err);
       setApiError(err.response?.data?.message || 'Signup failed');
