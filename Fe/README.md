@@ -1,16 +1,31 @@
-# React + Vite
+# FE (Vite + React)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory hosts the professional dashboard, auth flows, and landing page for the agentic resume analysis platform.
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+cd Fe
+npm install
+cp .env.example .env # create if needed
+npm run dev
+```
 
-## React Compiler
+Environment variables:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Name | Description |
+| --- | --- |
+| `VITE_API_URL` | Base URL of the Node backend (default `http://localhost:3000/api`) |
 
-## Expanding the ESLint configuration
+## Feature Highlights
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Tailwind 4-powered design system with dark, glassmorphic look.
+- Authenticated routes (dashboard, profile, editor) guarded via context.
+- Dashboard integrates resume parsing, JD inputs, AI insights, history, and live job suggestions.
+- Profile and Edit Profile sync with the Node backend for holistic user data.
+
+## Testing & Linting
+
+```bash
+npm run lint
+```

@@ -1,174 +1,176 @@
-import React, { useState, useEffect, useRef } from "react";
-import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Upload, FileText, Search, ChevronLeft, ChevronRight, 
-  Briefcase, CheckCircle, AlertTriangle, Lightbulb, X, LayoutDashboard, 
-  PieChart, Target, BarChart, User, GraduationCap, Phone, Mail, Clock, Zap
-} from "lucide-react";
-import NavBar from "../../Components/NavBar.jsx";
+import React from 'react'
+import NavBar from '../../Components/NavBar.jsx'
+import Prism from '../../Components/Prism'
+import { useEffect, useRef, useState } from 'react'
+import apiClient from '../../services/apiClient.js'
 
-// --- Utility Components ---
 
-const RadialProgress = ({ score, size = 180, strokeWidth = 12, label, subLabel, color = "#3B82F6" }) => {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const safeScore = isNaN(score) ? 0 : score;
-  const offset = circumference - (safeScore / 100) * circumference;
+const Dashboard = () => {
+ 
+ 
+  const [searchedText , setSearchedText] = useState ('');
 
-  return (
-    <div className="relative flex flex-col items-center justify-center" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="transform -rotate-90 transition-all duration-1000">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          className="text-gray-700 opacity-20"
-        />
-        <motion.circle
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={color}
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          strokeDasharray={circumference}
-          strokeLinecap="round"
-          className="drop-shadow-lg"
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-        <div className="text-4xl font-extrabold text-white">
-          {Math.round(safeScore)}
-          <span className="text-xl font-semibold text-white/70">%</span>
-        </div>
-        {label && <div className="text-sm font-medium text-white/90 mt-1">{label}</div>}
-        {subLabel && <div className="text-xs text-blue-400/80">{subLabel}</div>}
-      </div>
-    </div>
-  );
-};
+  const [files , setFiles] =useState([]);
 
-// Fixed the syntax error here: added the missing '}' in the template literal.
-const ColorProgressIndicator = ({ value, label, color }) => (
-  <div className="flex items-center space-x-2 text-sm">
-    <div className={`h-4 w-4 rounded-full ${color}`} /> 
-    <span className="text-gray-300">{label}:</span>
-    <span className="font-semibold text-white">{value}</span>
-  </div>
-);
+  const [isDragging , setIsDragging] =useState (false);
 
-const SectionHeader = ({ icon: Icon, title, description }) => (
-  <div className="flex items-start space-x-3 mb-6 p-4 rounded-xl border border-white/5 bg-gray-800/20 shadow-lg">
-    <Icon className="text-blue-400/90 w-6 h-6 flex-shrink-0 mt-0.5" />
-    <div>
-      <h2 className="text-2xl font-bold text-white mb-1">{title}</h2>
-      <p className="text-sm text-gray-400">{description}</p>
-    </div>
-  </div>
-);
+  const acceptedFromats = [ '.pdf' , '.docx' , '.doc'];
 
-const StatisticCard = ({ title, value, unit, icon: Icon, colorClass = "text-blue-400" }) => (
-  <div className="p-6 bg-gray-800/50 rounded-xl shadow-2xl border border-white/10 hover:border-blue-500/30 transition-all duration-300">
-    <div className="flex items-center justify-between">
-      <h3 className="text-sm font-medium text-gray-400">{title}</h3>
-      <Icon className={`w-5 h-5 ${colorClass}`} />
-    </div>
-    <p className="mt-2 text-3xl font-extrabold text-white">
-      {value}
-      {unit && <span className="text-lg font-semibold ml-1 text-gray-400">{unit}</span>}
-    </p>
-  </div>
-);
+  const fileSize= 5 * 1024 * 1024; // 5mb
 
-const AnalysisSummaryCard = ({ title, content, icon: Icon, color = "text-blue-400", background = "bg-blue-900/10" }) => (
-  <div className={`p-5 rounded-xl border border-white/10 shadow-lg ${background}`}>
-    <div className="flex items-center space-x-3 mb-3">
-      <Icon className={`w-5 h-5 ${color}`} />
-      <h3 className="text-lg font-semibold text-white">{title}</h3>
-    </div>
-    <ul className="list-disc pl-5 space-y-2 text-sm text-gray-300">
-      {Array.isArray(content) && content.length > 0 ? (
-        content.map((item, index) => (
-          <li key={index} className="leading-relaxed">{item}</li>
-        ))
-      ) : (
-        <li className="text-gray-500">No data found for this section.</li>
-      )}
-    </ul>
-  </div>
-);
-
-// --- View Components ---
-
-// Shared component for loading/error state
-const StateMessage = ({ icon: Icon, title, message, color = "text-blue-400" }) => (
-  <div className="flex flex-col items-center justify-center p-12 bg-gray-800/30 rounded-xl border border-white/10 backdrop-blur-sm shadow-xl mt-12">
-    <Icon className={`w-12 h-12 mb-4 ${color}`} />
-    <h2 className="text-xl font-bold text-white mb-2">{title}</h2>
-    <p className="text-gray-400 text-center max-w-md">{message}</p>
-  </div>
-);
-
-const InputView = ({ setViewState }) => {
-    // This is a placeholder for the actual InputView logic
-    // In a full application, this view would handle file uploads and JD input.
-    // For this dashboard context, we'll keep it simple or integrate it within the main dashboard page.
-    return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-160px)]">
-            <div className="text-center p-10 bg-gray-800/30 rounded-xl border border-blue-500/20 backdrop-blur-md shadow-2xl max-w-xl">
-                <Upload className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Upload Resume & Job Description</h2>
-                <p className="text-gray-400 mb-6">
-                    Start by uploading a candidate's resume (PDF/DOCX) and pasting the corresponding job description (JD) to receive an AI-powered fit analysis.
-                </p>
-                <button
-                    onClick={() => { /* Placeholder action, e.g., open file picker */ }}
-                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 transition-colors transform hover:scale-[1.02]"
-                >
-                    Start New Analysis
-                </button>
-                <p className="text-xs text-gray-500 mt-4">Note: This is a placeholder UI. Functionality is integrated with the main App.</p>
-            </div>
-        </div>
-    );
-};
-
-const AnalysisView = ({ analysisData, jobTitle }) => {
-  if (!analysisData) {
-    return <StateMessage icon={X} title="No Analysis Data" message="Please perform an analysis first to view the results." color="text-red-400" />;
-  }
+  const [backendtext , setBackendText] =useState('');
+  const [displayedtext , setDisplayedText] =useState('');
+  const [history ,sethistory] = useState([]);
+  const [analysis, setAnalysis] = useState(null);
+  const [jobSuggestions, setJobSuggestions] = useState([]);
+  const [historyLoading ,setHistoryLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error ,setError] = useState(null);
   
-  const { 
-    overall_score, skills_score, experience_score, education_score, 
-    matched_keywords, missing_keywords, strengths, weaknesses, 
-    recommendations, summary_critique, structured_resume 
-  } = analysisData;
 
-  const getScoreColor = (score) => {
-    if (score >= 80) return "text-green-400";
-    if (score >= 60) return "text-yellow-400";
-    if (score >= 40) return "text-orange-400";
-    return "text-red-400";
+  const containerRef = useRef(null);
+
+
+
+  const validateFile = (file) =>{
+
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+
+    if(!acceptedFromats.includes(ext)){
+      alert ('File format not supported. Please upload PDF or Word documents.');
+      return false;
+    }
+
+    if (file.size > fileSize){
+      alert ('File size exceeds the 5MB limit. Please upload a smaller file.');
+      return false;
+    }
+    
+    return true;
   };
 
-  const getProgressColor = (score) => {
-    if (score >= 80) return "#10B981"; // Emerald
-    if (score >= 60) return "#F59E0B"; // Amber
-    if (score >= 40) return "#FB923C"; // Orange
-    return "#F87171"; // Red
+{/* History is fetched on mount and re-fetched after each successful submission */}
+
+  const formatDate = (value) => {
+    try {
+      return new Date(value).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return value;
+    }
   };
 
-  // Ensure arrays are not null
-  const safe_strengths = strengths || [];
-  const safe_weaknesses = weaknesses || [];
-  const safe_recommendations = recommendations || [];
+  const fetchHistory = async () => {
+    try {
+      setHistoryLoading(true);
+      const { data } = await apiClient.get('/analysis/history');
+      sethistory(data.items || []);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching history:', err.message);
+      setError(err.response?.data?.message || 'Unable to fetch history');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+
+  // Fetch History compponent Mount whenever page is loaded
+
+  useEffect ( ()=>{
+    fetchHistory();
+  } , [] );
+
+
+  //Typewritter effect for displaying backend text
+  //used Ai to make this effect
+
+  useEffect( ()=> {
+    setDisplayedText("");
+    if (!backendtext) return;
+
+    let i = 0;
+    const typeSpeed = 30;  // milliseconds per char
+    const timer = setInterval(() => {
+      setDisplayedText(prev => prev + backendtext.charAt(i));
+      i++; 
+      if (i >= backendtext.length) {
+        clearInterval(timer);
+      }
+    }, typeSpeed);
+
+    return () => clearInterval(timer);
+  }, [backendtext]);
+
+// Auto scroll to bottom when displayedtext updates
+// this component will help to scroll the text area to bottom whenever new text is added
+
+  useEffect(() =>{
+
+    const el= containerRef.current;
+    if(el){
+      el.scrollTop = el.scrollHeight;
+    }
+  } , [displayedtext])
+
+//handle loading when fetching history
+  if(historyLoading) {
+     return <div className='text-white text-xl flex items-center justify-center min-h-screen'> Loading... </div>
+  }
+
+  // form submit handler 
+  // this is 
+const handleSubmit  = async (e) =>{
+  e.preventDefault();
+  
+  if(files.length === 0){
+    return alert ('please attach a resume before submitting');}
+  if(searchedText.trim() ===''){
+      return alert ('please enter the JD text before submitting');
+    }
+
+  setSubmitting(true);
+  setError(null);
+
+  try {
+    const formData = new FormData();
+    formData.append('jdText', searchedText);
+    formData.append('resume', files[0]);
+
+    const { data } = await apiClient.post('/analysis', formData, { 
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    const analysisPayload = data.analysis;
+    setAnalysis(analysisPayload);
+    setJobSuggestions(analysisPayload?.jobSuggestions || []);
+
+    const narrative = `Resume Summary:\n${analysisPayload?.resumeSummary || 'N/A'}\n\nJD Summary:\n${analysisPayload?.jdSummary || 'N/A'}\n\nInsights:\n${analysisPayload?.insights || 'No insights yet.'}`;
+    setBackendText(narrative);
+    
+    // Refetch history after successful submission
+    await fetchHistory();
+
+    // Clear form
+    setSearchedText('');
+    setFiles([]);
+
+  } catch (error) {
+    console.error('Error submitting data: ', error);
+    setError(error.response?.data?.message || 'Failed to submit. Please try again.');
+    alert('Error: ' + (error.response?.data?.message || 'Failed to submit'));
+  } finally {
+    setSubmitting(false);
+  }
+
+  }
+
 
   return (
     <div className="space-y-12">
@@ -259,116 +261,47 @@ const AnalysisView = ({ analysisData, jobTitle }) => {
           background="bg-blue-900/10"
         />
       </div>
-
-      {/* 3. Keywords & Summary */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-            <h3 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Summary Critique</h3>
-            <p className="p-4 text-gray-300 bg-gray-800/50 rounded-xl border border-white/10 shadow-inner leading-relaxed">
-              {summary_critique || "No summary critique available."}
-            </p>
+      
+      {/* Content on top of Prism */}
+      <div className='relative z-10'>
+        {/* Navbar */}
+        <div className='h-20 my-3 mx-3 rounded-3xl'>
+          <NavBar/>
         </div>
-        <div className="md:col-span-1">
-            <h3 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">JD Keyword Analysis</h3>
-            <div className="p-4 bg-gray-800/50 rounded-xl border border-white/10 shadow-inner space-y-3">
-                <h4 className="text-base font-medium text-blue-400">Matched ({matched_keywords ? matched_keywords.length : 0})</h4>
-                <div className="flex flex-wrap gap-2">
-                    {(matched_keywords || []).map((keyword, index) => (
-                        <span key={index} className="px-3 py-1 text-xs font-medium bg-green-700/50 text-green-300 rounded-full">{keyword}</span>
-                    ))}
-                </div>
-                
-                <h4 className="text-base font-medium text-red-400 pt-3 border-t border-white/5">Missing ({missing_keywords ? missing_keywords.length : 0})</h4>
-                <div className="flex flex-wrap gap-2">
-                    {(missing_keywords || []).map((keyword, index) => (
-                        <span key={index} className="px-3 py-1 text-xs font-medium bg-red-700/50 text-red-300 rounded-full line-through opacity-80">{keyword}</span>
-                    ))}
-                </div>
-            </div>
-        </div>
-      </div>
-
-
-      {/* 4. Structured Resume Data */}
-      {structured_resume && (
-        <>
-          <SectionHeader 
-            icon={FileText} 
-            title="Extracted Candidate Data" 
-            description="The key information structured by the AI for quick reference." 
-          />
-
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
-              {/* Contact Info */}
-              <div className="md:col-span-1 p-5 bg-gray-800/50 rounded-xl border border-white/10 shadow-lg">
-                  <h3 className="text-xl font-bold text-white mb-3 border-b border-white/10 pb-2">{structured_resume.contact_info?.name || "Candidate"}</h3>
-                  <div className="space-y-2 text-sm text-gray-300">
-                      {structured_resume.contact_info?.email && (
-                          <div className="flex items-center"><Mail className="w-4 h-4 mr-2 text-blue-400"/>{structured_resume.contact_info.email}</div>
-                      )}
-                      {structured_resume.contact_info?.phone && (
-                          <div className="flex items-center"><Phone className="w-4 h-4 mr-2 text-blue-400"/>{structured_resume.contact_info.phone}</div>
-                      )}
-                      {structured_resume.contact_info?.linkedin && (
-                          <div className="flex items-center"><User className="w-4 h-4 mr-2 text-blue-400"/>
-                          <a href={structured_resume.contact_info.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 truncate">LinkedIn</a>
-                          </div>
-                      )}
-                       {structured_resume.contact_info?.portfolio && (
-                          <div className="flex items-center"><LayoutDashboard className="w-4 h-4 mr-2 text-blue-400"/>
-                          <a href={structured_resume.contact_info.portfolio} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 truncate">Portfolio</a>
-                          </div>
-                      )}
-                  </div>
-              </div>
-              
-              {/* Summary */}
-              <div className="md:col-span-3 p-5 bg-gray-800/50 rounded-xl border border-white/10 shadow-lg">
-                  <h3 className="text-xl font-semibold text-white mb-3 border-b border-white/10 pb-2">Professional Summary</h3>
-                  <p className="text-gray-300 leading-relaxed">{structured_resume.summary || "Summary not extracted."}</p>
-              </div>
+        
+        {error && (
+          <div className='mx-3 mb-3 bg-red-500/20 border border-red-400/40 text-red-200 text-center py-3 rounded-2xl'>
+            {error}
           </div>
+        )}
+        {/* Grid Layout */}
+        <div className='grid grid-rows-3 grid-cols-6 gap-4 mx-3 mb-3' style={{ height: '860px' }}>
 
-          {/* Experience and Education/Projects Grid */}
-          <div className="grid lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                  <h3 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2 flex items-center"><Briefcase className="w-5 h-5 mr-2 text-blue-400"/>Work Experience</h3>
-                  <div className="space-y-5">
-                      {structured_resume.experience && structured_resume.experience.length > 0 ? (
-                          structured_resume.experience.map((exp, index) => (
-                              <div key={index} className="p-4 border-l-4 border-blue-600 bg-gray-800/30 rounded-r-lg shadow-md">
-                                  <h4 className="text-lg font-bold text-white">{exp.title}</h4>
-                                  <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
-                                    <span>{exp.company}</span>
-                                    <span className="flex items-center"><Clock className="w-3 h-3 mr-1"/>{exp.dates}</span>
-                                  </div>
-                                  <p className="text-sm text-gray-300">{exp.description_summary}</p>
-                              </div>
-                          ))
-                      ) : (
-                          <p className="text-gray-500">No work experience extracted.</p>
-                      )}
+
+          {/* below is the component where we will get the history of user */}
+          <div id='history' className='col-span-2 row-span-3 rounded-3xl p-4 overflow-y-auto'>
+            <h3 className='text-2xl text-white text-center border-2 border-amber-50 rounded-2xl p-2 mb-4'>History</h3>
+             {/*Below is the component using the map method to fetch all the history of the user form database*/}
+            {history.length === 0 ? (
+              <div className='flex items-center justify-center h-64'>
+                <p className='bg-opacity-75 bg-gray-500 opacity-70 rounded-2xl text-black text-lg p-4 text-center'>
+                  No history yet. Submit a job description to get started!
+                </p>
+              </div>
+            ) : (
+              <div className='space-y-3'>
+                {history.map((item) => (
+                  <div key={item._id} className='bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg'>
+                    <div className='flex justify-between items-center mb-2'>
+                      <p className='text-white font-semibold'>Score</p>
+                      <span className='text-green-400 font-bold text-lg'>{item.score ?? '--'}%</span>
+                    </div>
+                    <p className='text-gray-200 text-sm mb-2'>
+                      {item.jdSummary || (item.jobDescription ? `${item.jobDescription.slice(0, 120)}...` : 'No description')}
+                    </p>
+                    <p className='text-xs text-gray-400'>{formatDate(item.createdAt)}</p>
                   </div>
-                  
-                  {structured_resume.projects && structured_resume.projects.length > 0 && (
-                      <div className="pt-6">
-                          <h3 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2 flex items-center"><Target className="w-5 h-5 mr-2 text-blue-400"/>Key Projects</h3>
-                          <div className="space-y-4">
-                              {structured_resume.projects.map((project, index) => (
-                                  <div key={index} className="p-4 bg-gray-800/30 rounded-lg shadow-md border border-white/10">
-                                      <h4 className="text-lg font-bold text-white mb-1">{project.project_name}</h4>
-                                      <p className="text-sm text-gray-300 mb-2">{project.description}</p>
-                                      <div className="flex flex-wrap gap-2">
-                                          {(project.technologies || []).map((tech, i) => (
-                                              <span key={i} className="px-2 py-0.5 text-xs font-medium bg-purple-700/50 text-purple-300 rounded-md">{tech}</span>
-                                          ))}
-                                      </div>
-                                  </div>
-                              ))}
-                          </div>
-                      </div>
-                  )}
-
+                ))}
               </div>
               
               <div className="lg:col-span-1 space-y-6">
@@ -656,75 +589,58 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Breakdown Radial Scores */}
-        <div className="lg:col-span-1 p-6 bg-gray-800/50 rounded-xl shadow-2xl border border-white/10 flex flex-col items-center">
-          <h3 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2 w-full text-center">Average Breakdown</h3>
-          <div className="flex flex-wrap justify-center gap-4">
-             <RadialProgress score={stats.averageExperienceScore} size={100} strokeWidth={8} label="Experience" color="#6366F1" />
-             <RadialProgress score={stats.averageSkillsScore} size={100} strokeWidth={8} label="Skills" color="#F97316" />
-             <RadialProgress score={stats.averageEducationScore} size={100} strokeWidth={8} label="Education" color="#0EA5E9" />
-          </div>
-        </div>
+      <div className='flex items-center gap-3 mb-3'>
+        <label className='inline-flex items-center gap-2 rounded-xl bg-blue-500 px-5 py-2.5 text-white font-medium hover:bg-blue-600 cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed'
+        >
+          <svg className='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13' />
+          </svg>
+          Attach Resume
+          <input 
+          type='file'
+          className='hidden'
+          accept='.pdf,.doc,.docx'
+          disabled={submitting}
+          onChange={(e)=>{
+            const selectedFiles = e.target.files;
+            if (selectedFiles.length === 0) return;
+
+            const file = selectedFiles[0];
+
+            if (validateFile(file)){
+              setFiles([file]);
+            }
+            e.target.value = '';
+          }}
+          />
+        </label>
+
+        <button 
+        type='submit'
+        disabled={submitting}
+        className='inline-flex items-center gap-2 rounded-xl bg-green-500 hover:bg-green-600 text-white font-bold px-6 py-2.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed'>
+          {submitting ? (
+            <>
+              <svg className='animate-spin h-5 w-5' fill='none' viewBox='0 0 24 24'>
+                <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+                <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+              </svg>
+              Analyzing...
+            </>
+          ) : (
+            'Submit'
+          )}
+        </button>
       </div>
-      
-      {/* Quick Access to History */}
-      <div className="pt-4">
-        <h3 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Recent Activity</h3>
-        <HistoryView historyData={historyData} onSelectAnalysis={handleSelectAnalysis} />
-      </div>
 
-      {/* Spacing */}
-      <div className="h-16"></div>
-    </div>
-  );
-  
-  const renderContent = () => {
-    switch (viewState) {
-      case "input":
-        return <InputView setViewState={setViewState} />;
-      case "analysis":
-        return <AnalysisView analysisData={analysisData} jobTitle={jobTitle} />;
-      case "history":
-        return <HistoryView historyData={historyData} onSelectAnalysis={handleSelectAnalysis} />;
-      case "dashboard":
-      default:
-        return statsData ? <DashboardView stats={statsData} /> : <StateMessage icon={Clock} title="Loading Dashboard" message="Fetching your recruitment activity metrics..." color="text-blue-400" />;
-    }
-  };
-
-  const navItems = [
-    { name: "Dashboard", view: "dashboard", icon: LayoutDashboard },
-    { name: "New Analysis", view: "input", icon: Upload },
-    { name: "Last Report", view: "analysis", icon: FileText },
-    { name: "History", view: "history", icon: Clock },
-  ];
-
-  return (
-    <div className="flex h-screen bg-[#0B0F17] text-white font-sans">
-      
-      {/* Sidebar */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ x: "-100%" }}
-            animate={{ x: "0%" }}
-            exit={{ x: "-100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-y-0 left-0 z-50 w-64 bg-gray-900/95 backdrop-blur-md shadow-2xl md:static"
-          >
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-8">
-                <h1 className="text-2xl font-bold text-blue-400">AI Recruiter</h1>
-                <button 
-                  onClick={() => setSidebarOpen(false)} 
-                  className="p-1 rounded-full text-gray-400 hover:bg-gray-700 md:hidden"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-              
-              <nav className="flex-grow space-y-2">
-                {navItems.map(item => (
+       <div className="text-sm mt-2">
+        {files.length > 0 && (
+          <div className='bg-gray-700 bg-opacity-50 rounded-lg p-3'>
+            <p className='text-white font-semibold mb-2'>Attached Files:</p>
+            <ul className="space-y-1">
+              {files.map((f, i) => (
+                <li key={i} className='flex items-center justify-between text-gray-200 bg-gray-600 bg-opacity-50 rounded px-3 py-1.5'>
+                  <span className='truncate'>{f.name}</span>
                   <button
                     key={item.view}
                     onClick={() => { setViewState(item.view); setSidebarOpen(false); }}
@@ -737,18 +653,77 @@ const Dashboard = () => {
                     <item.icon className="w-5 h-5 mr-3" />
                     {item.name}
                   </button>
-                ))}
-              </nav>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+    </form>
+    </div>
+  </div>
+</div>
 
-              <div className="mt-auto pt-4 border-t border-gray-700">
-                  <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-lg font-bold">JD</div>
-                      <div>
-                          <p className="text-white font-semibold">Recruiter Dashboard</p>
-                          <p className="text-xs text-gray-400">Welcome back!</p>
-                      </div>
-                  </div>
+
+
+          {/* Below is the component of showing the pie chart of matching the abilities and the tally of the score
+          when the user will search for the jd and attach the resume*/}
+
+          
+          <div className='col-span-1 row-span-3 rounded-2xl p-4 bg-white/5 backdrop-blur-lg border border-white/10 flex flex-col gap-6'>
+            <div className='text-white text-center'>
+              <h3 className='text-2xl font-bold mb-2'>Match Score</h3>
+              <div className='text-5xl font-extrabold text-green-400'>
+                {analysis ? `${analysis.score}%` : '--'}
               </div>
+              <p className='text-xs text-gray-400 mt-1'>Based on resume vs JD skills</p>
+            </div>
+            <div>
+              <h4 className='text-white font-semibold mb-2'>Missing Keywords</h4>
+              {analysis?.missingKeywords?.length ? (
+                <ul className='flex flex-wrap gap-2'>
+                  {analysis.missingKeywords.slice(0,5).map((kw) => (
+                    <li key={kw} className='text-xs px-3 py-1 bg-red-500/20 text-red-200 rounded-full'>
+                      {kw}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className='text-gray-400 text-sm'>Upload a resume to view gaps.</p>
+              )}
+            </div>
+            <div>
+              <h4 className='text-white font-semibold mb-2'>Recommended Skills</h4>
+              {analysis?.recommendedSkills?.length ? (
+                <ul className='flex flex-wrap gap-2'>
+                  {analysis.recommendedSkills.slice(0,5).map((skill) => (
+                    <li key={skill} className='text-xs px-3 py-1 bg-emerald-500/20 text-emerald-200 rounded-full'>
+                      {skill}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className='text-gray-400 text-sm'>Recommendations will appear here.</p>
+              )}
+            </div>
+            <div className='overflow-y-auto'>
+              <h4 className='text-white font-semibold mb-2'>Job Suggestions</h4>
+              {jobSuggestions.length === 0 ? (
+                <p className='text-gray-400 text-sm'>Submit a JD to get live job leads.</p>
+              ) : (
+                <ul className='space-y-3'>
+                  {jobSuggestions.map((job) => (
+                    <li key={job.url} className='bg-black/30 rounded-xl p-3 border border-white/5'>
+                      <p className='text-white font-semibold'>{job.title}</p>
+                      <p className='text-gray-300 text-sm'>{job.company} • {job.location}</p>
+                      <a className='text-cyan-300 text-xs' href={job.url} target='_blank' rel='noreferrer'>
+                        View role →
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </motion.div>
         )}

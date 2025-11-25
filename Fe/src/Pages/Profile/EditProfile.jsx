@@ -1,16 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-
-// NOTE: Ensure AnimatedContent and Threads are not necessary for the new design,
-// as they are visually heavy and removed in this professional revamp.
+import React, { useState, useEffect } from 'react'
+import AnimatedContent from '../../Components/AnimatedContent'
+import Threads from '../../Components/Threads'
+import apiClient from '../../services/apiClient.js'
+import { useAuth } from '../../Context/AuthContext.jsx'
 
 const EditProfile = () => {
-  const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: ''
+    email: '',
+    headline: '',
+    currentRole: '',
+    location: '',
+    summary: '',
+    skills: '',
+    linkedin: '',
+    github: '',
+    portfolio: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -22,17 +29,24 @@ const EditProfile = () => {
 
     const fetchUserData = async () => {
       try {
-        // NOTE: Replace the string with your actual GET API endpoint
-        const response = await axios.get(`/api/users/${userId}`); 
+        const { data } = await apiClient.get('/users/me');
         setFormData({
-          firstName: response.data.firstName || '',
-          lastName: response.data.lastName || '',
-          email: response.data.email || ''
+          firstName: data.user.firstname || '',
+          lastName: data.user.lastname || '',
+          email: data.user.email || '',
+          headline: data.user.profile?.headline || '',
+          currentRole: data.user.profile?.currentRole || '',
+          location: data.user.profile?.location || '',
+          summary: data.user.profile?.summary || '',
+          skills: data.user.profile?.skills?.join(', ') || '',
+          linkedin: data.user.profile?.socialLinks?.linkedin || '',
+          github: data.user.profile?.socialLinks?.github || '',
+          portfolio: data.user.profile?.socialLinks?.portfolio || ''
         });
-        setIsPageLoaded(true); // Set to true once data is fetched
+        setIsPageLoaded(true);
       } catch (error) {
         console.error('Error fetching user data:', error);
-        setIsPageLoaded(true); // Still set to true to show the form even if data fetch fails
+        setIsPageLoaded(true);
       }
     };
 
@@ -80,11 +94,31 @@ const EditProfile = () => {
     if (validateForm()) {
       setIsLoading(true);
       try {
-        // NOTE: Replace the string with your actual PUT/PATCH API endpoint
-        const response = await axios.put('/api/users/profile', formData); 
+        const payload = {
+          firstname: formData.firstName,
+          lastname: formData.lastName,
+          email: formData.email,
+          profile: {
+            headline: formData.headline,
+            currentRole: formData.currentRole,
+            location: formData.location,
+            summary: formData.summary,
+            skills: formData.skills
+              .split(',')
+              .map((skill) => skill.trim())
+              .filter(Boolean),
+            socialLinks: {
+              linkedin: formData.linkedin,
+              github: formData.github,
+              portfolio: formData.portfolio,
+            },
+          },
+        };
+
+        const { data } = await apiClient.put('/users/me', payload);
+        setUser(data.user);
         alert('Profile updated successfully!');
-        console.log('Updated data:', response.data);
-        navigate('/profile'); // Navigate back to profile page on success
+        console.log('Updated data:', data.user);
       } catch (error) {
         console.error('Error updating profile:', error);
         alert('Failed to update profile. Please try again.');
@@ -103,8 +137,6 @@ const EditProfile = () => {
       </div>
     );
   }
-
-  // --- REVAMPED PROFESSIONAL UI ---
   return (
     // Clean Dark Mode Background
     <div className="bg-gray-900 min-h-screen flex items-center justify-center p-4">
@@ -138,25 +170,112 @@ const EditProfile = () => {
             )}
           </div>
 
-          {/* Last Name Field */}
-          <div>
-            <label className="block text-slate-300 text-sm font-semibold mb-2">
-              Last Name
-            </label>
-            <input
-              type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              className={`w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${
-                errors.lastName ? 'border-red-500' : ''
-              }`}
-              placeholder="Enter last name"
-            />
-            {errors.lastName && (
-              <p className="text-red-400 text-sm mt-1">{errors.lastName}</p>
-            )}
-          </div>
+            <div>
+              <label className="block text-white/90 text-sm font-semibold mb-2">
+                Headline
+              </label>
+              <input
+                type="text"
+                name="headline"
+                value={formData.headline}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/15 transition-all"
+                placeholder="Senior Resume Strategist"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-white/90 text-sm font-semibold mb-2">
+                  Current Role
+                </label>
+                <input
+                  type="text"
+                  name="currentRole"
+                  value={formData.currentRole}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/15 transition-all"
+                  placeholder="Lead Recruiter"
+                />
+              </div>
+              <div>
+                <label className="block text-white/90 text-sm font-semibold mb-2">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/15 transition-all"
+                  placeholder="Remote, NYC"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-white/90 text-sm font-semibold mb-2">
+                Professional Summary
+              </label>
+              <textarea
+                name="summary"
+                value={formData.summary}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/15 transition-all"
+                placeholder="Briefly tell us how you help candidates win interviews..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-white/90 text-sm font-semibold mb-2">
+                Skills (comma separated)
+              </label>
+              <input
+                type="text"
+                name="skills"
+                value={formData.skills}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/15 transition-all"
+                placeholder="ATS, Resume Writing, AI Prompting"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {['linkedin', 'github', 'portfolio'].map((field) => (
+                <div key={field}>
+                  <label className="block text-white/90 text-sm font-semibold mb-2 capitalize">
+                    {field}
+                  </label>
+                  <input
+                    type="text"
+                    name={field}
+                    value={formData[field]}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/15 transition-all"
+                    placeholder={`https://${field}.com/`}
+                  />
+                </div>
+              ))}
+            </div>
+
+    
+            <div>
+              <label className="block text-white/90 text-sm font-semibold mb-2">
+                Last Name
+              </label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white/15 transition-all"
+                placeholder="Enter last name"
+              />
+              {errors.lastName && (
+                <p className="text-red-400 text-xs mt-1">{errors.lastName}</p>
+              )}
+            </div>
 
           {/* Email Field */}
           <div>

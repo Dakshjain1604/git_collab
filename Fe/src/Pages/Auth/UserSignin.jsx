@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import apiClient from '../../services/apiClient.js';
+import { useAuth } from '../../Context/AuthContext.jsx';
 
 const UserSignin = () => {
   const navigate = useNavigate();
 
+
+  const { setUser, setToken } = useAuth();
   const [password, setpassword] = useState('');
   const [username, setUsername] = useState('');
   const [errors, setErrors] = useState({});
@@ -34,30 +37,16 @@ const UserSignin = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/user/signin', {
+      const { data } = await apiClient.post('/auth/login', {
         username,
         password,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
       });
-
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-
-      // Successful sign in: navigate to dashboard (keeps existing behavior)
-      navigate('/user/DashBoard');
+      setToken(data.token);
+      setUser(data.user);
+      navigate('/user/dashboard');   
     } catch (err) {
       console.error(err);
-      const errorMessage = err.response?.data?.message || 'Signin failed';
-      setApiError(errorMessage);
-
-      // show popup modal when an API error occurs
-      setShowPopup(true);
-    } finally {
-      setIsLoading(false);
+      setApiError(err.response?.data?.message || 'Login failed');
     }
   };
 
@@ -99,30 +88,26 @@ const UserSignin = () => {
               </div>
             )}
 
-            {/* Username/Email */}
-            <div className="space-y-2">
-              <label htmlFor="username" className="block text-sm font-semibold text-white/90">
-                Email Address
-              </label>
-              <div className="relative group">
-                <input
-                  id="username"
-                  name="username"
-                  type="email"
-                  placeholder='john.doe@example.com'
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className={`w-full px-4 py-3 bg-transparent border ${
-                    errors.username ? 'border-red-500/60' : 'border-white/20'
-                  } rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/2 transition-all duration-200`}
-                />
-              </div>
-              {errors.username && (
-                <p className="text-sm text-red-300 mt-1 flex items-center gap-1">
-                  <span>⚠</span> {errors.username}
-                </p>
-              )}
-            </div>
+
+        <div className="mb-4">
+          <label htmlFor="email" className="block mb-1 font-medium"> 
+            UserName 
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder='JohnDoe@gmail.com'
+            value={username}                                           /* ← added value prop */
+            onChange={(e) => setUsername(e.target.value)}
+            className={`w-full px-3 py-2 border rounded ${
+              errors.username ? 'border-red-500' : 'border-gray-300'
+            } focus:outline-none focus:ring-2 focus:ring-indigo-400`}
+          />
+          {errors.username && (
+            <p className="text-sm text-red-500 mt-1">{errors.username}</p>
+          )}
+        </div>
 
             {/* Password */}
             <div className="space-y-2">

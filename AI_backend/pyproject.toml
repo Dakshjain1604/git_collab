@@ -12,6 +12,7 @@ dependencies = [
     "llama-cloud-services>=0.6.73",
     "pymupdf>=1.26.5",
     "pypdf2>=3.0.1",
+    "python-docx>=1.1.2",
     "python-multipart>=0.0.20",
     "unstructured[pdf]>=0.18.15",
     "python-docx>=1.1.0",

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Plasma from '../../Components/Plasma';
+import apiClient from '../../services/apiClient.js';
+import { useAuth } from '../../Context/AuthContext.jsx';
 
 const UserSignup = () => {
   const navigate = useNavigate();
 
+  const { setUser, setToken } = useAuth();
   const [firstname, setfirstname] = useState('');
   const [lastname, setlastname] = useState('');
   const [password, setpassword] = useState('');
@@ -36,19 +39,16 @@ const UserSignup = () => {
     setUserExists(false);
 
     try {
-      const response = await axios.post('http://localhost:3000/user/signup', {
+      const { data } = await apiClient.post('/auth/signup', {
         firstname,
         lastname,
         username,
         password,
       });
 
-      if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
-      }
-
-      alert('User Registered Successfully');
-      navigate('/user/signin');
+      setToken(data.token);
+      setUser(data.user);
+      navigate('/user/dashboard');  
     } catch (err) {
       const message = err.response?.data?.message || 'Signup failed';
       setApiError(message);
