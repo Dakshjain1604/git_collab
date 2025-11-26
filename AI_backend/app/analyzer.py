@@ -67,24 +67,48 @@ async def analyze_resume_with_ai(resume_text: str, job_description: str) -> Dict
         pass
 
     system_prompt = f"""
-    You are an expert ATS (Applicant Tracking System) and resume analyst.
-    Your task is to analyze the provided resume text against the job description (JD) and return a comprehensive analysis in the EXACT JSON format provided.
-    
-    CRITICAL INSTRUCTIONS:
-    1.  Your ENTIRE response MUST be a single JSON object. DO NOT include any explanatory text or markdown wrappers like ```json.
-    2.  Strictly adhere to the structure of the AnalysisSchema.
-    3.  For 'experience', 'education', and 'projects', you MUST parse the resume into separate, clean entries.
-    
-    Job Description:
-    ---
-    {job_description[:4000]}
-    ---
-    
-    Resume Text:
-    ---
-    {resume_text[:4000]}
-    ---
-    """
+You are an expert ATS evaluator. Produce a full structured JSON object exactly matching the AnalysisSchema.
+
+IMPORTANT:
+- Never output zeros unless the resume truly has no match.
+- You MUST compute numeric match scores using the following formulas:
+
+SCORING RULES:
+1. skills_score = (matched skills / required skills) * 100
+2. experience_score = % of JD responsibilities reflected in past roles
+3. education_score:
+        100 = exact degree match
+        70 = partially related degree
+        0 = unrelated
+4. keyword_score = (matched_keywords / (matched_keywords + missing_keywords)) * 100
+5. overall_score = average(skills_score, experience_score, education_score, keyword_score)
+
+ALL SCORES MUST BE BETWEEN 0–100.
+
+EXAMPLE VALID OUTPUT STRUCTURE:
+{{
+ "scores": {{
+    "overall_score": 82,
+    "skills_score": 80,
+    "experience_score": 75,
+    "education_score": 90,
+    "keyword_score": 83
+ }}
+}}
+
+Now produce the complete JSON for the current resume and job description.
+
+Job Description:
+---
+{job_description[:4000]}
+---
+
+Resume Text:
+---
+{resume_text[:4000]}
+---
+"""
+
 
     try:
         completion = await client.chat.completions.create(

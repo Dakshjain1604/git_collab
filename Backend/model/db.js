@@ -8,7 +8,7 @@ mongoose.connect(process.env.MONGODB_URL)
 // --- END CONNECTION ---
 
 
-// --- 1. USER SCHEMA (No Change) ---
+// --- 1. USER SCHEMA ---
 const userSchema = new mongoose.Schema({
   firstname: String,
   lastname: String,
@@ -26,13 +26,13 @@ const contactInfoSchema = new mongoose.Schema({
   email: { type: String },
   linkedin: { type: String },
   portfolio: { type: String }
-}, { _id: false }); // Prevent Mongoose from creating an _id for this sub-document
+}, { _id: false });
 
 // Aligned with Pydantic ExperienceEntry
 const structuredExperienceSchema = new mongoose.Schema({
   title: { type: String },
   company: { type: String },
-  dates: { type: String }, // Stored as a string from the AI (e.g., "Jan 2020 - Dec 2023")
+  dates: { type: String },
   description_summary: { type: String }
 }, { _id: false });
 
@@ -51,30 +51,66 @@ const structuredProjectSchema = new mongoose.Schema({
 }, { _id: false });
 
 
-// --- 3. ANALYSIS HISTORY SCHEMA (No Change) ---
+// --- 3. FIXED: NESTED SCORES AND KEYWORDS SCHEMAS ---
+const scoresSchema = new mongoose.Schema({
+  overall_score: { type: Number, default: 0, min: 0, max: 100 },
+  skills_score: { type: Number, default: 0, min: 0, max: 100 },
+  experience_score: { type: Number, default: 0, min: 0, max: 100 },
+  education_score: { type: Number, default: 0, min: 0, max: 100 },
+  keyword_score: { type: Number, default: 0, min: 0, max: 100 }
+}, { _id: false });
+
+const keywordsSchema = new mongoose.Schema({
+  matched_keywords: [{ type: String }],
+  missing_keywords: [{ type: String }]
+}, { _id: false });
+
+
+// --- 4. FIXED: ANALYSIS HISTORY SCHEMA WITH NESTED OBJECTS ---
 const analysisHistorySchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   resume_filename: { type: String },
   jd_text_used: { type: String },
-  jd_title_used: { type: String }, // NEW: Store the title used in analysis
+  jd_title_used: { type: String },
   
-  // Scores
-  overall_score: { type: Number, required: true, min: 0, max: 100 },
-  skills_score: { type: Number, min: 0, max: 100 },
-  experience_score: { type: Number, min: 0, max: 100 },
-  education_score: { type: Number, min: 0, max: 100 },
+  // NESTED SCORES OBJECT (for frontend compatibility)
+  scores: {
+    type: scoresSchema,
+    default: () => ({
+      overall_score: 0,
+      skills_score: 0,
+      experience_score: 0,
+      education_score: 0,
+      keyword_score: 0
+    })
+  },
   
-  // Detailed Results (Arrays should be initialized empty if not present)
+  // FLATTENED SCORES (for backward compatibility and easier queries)
+  overall_score: { type: Number, default: 0, min: 0, max: 100 },
+  skills_score: { type: Number, default: 0, min: 0, max: 100 },
+  experience_score: { type: Number, default: 0, min: 0, max: 100 },
+  education_score: { type: Number, default: 0, min: 0, max: 100 },
+  
+  // NESTED KEYWORDS OBJECT (for frontend compatibility)
+  keywords: {
+    type: keywordsSchema,
+    default: () => ({
+      matched_keywords: [],
+      missing_keywords: []
+    })
+  },
+  
+  // FLATTENED KEYWORDS (for backward compatibility and easier queries)
   matched_keywords: [{ type: String }],
   missing_keywords: [{ type: String }],
+  
+  // Analysis Results
   strengths: [{ type: String }],
   weaknesses: [{ type: String }],
   recommendations: [{ type: String }],
+  summary_critique: { type: String },
   
-  // Critique/Summary
-  summary_critique: { type: String }, // Aligned with the Python backend field
-  
-  // NEW: Structured Resume Data from AI
+  // Structured Resume Data from AI
   structured_resume: {
     contact_info: contactInfoSchema,
     summary: { type: String },
@@ -88,24 +124,31 @@ const analysisHistorySchema = new mongoose.Schema({
   analysis_date: { type: Date, default: Date.now },
   file_id: { type: String }
 }, { 
-  timestamps: true // Adds createdAt and updatedAt
+  timestamps: true
 });
 
-// --- 4. NEW: JOB DESCRIPTION SCHEMA ---
+// --- INDEX FOR BETTER QUERY PERFORMANCE ---
+analysisHistorySchema.index({ userId: 1, analysis_date: -1 });
+analysisHistorySchema.index({ userId: 1, overall_score: -1 });
+
+
+// --- 5. JOB DESCRIPTION SCHEMA ---
 const jobDescriptionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  title: { type: String, required: true, trim: true }, // E.g., "Senior Software Engineer"
-  description: { type: String, required: true }, // The full JD text
+  title: { type: String, required: true, trim: true },
+  description: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 }, { 
   timestamps: true 
 });
 
+// Index for faster JD lookups
+jobDescriptionSchema.index({ userId: 1, createdAt: -1 });
 
-// --- 5. MODELS ---
+
+// --- 6. MODELS ---
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 const AnalysisHistory = mongoose.models.AnalysisHistory || mongoose.model('AnalysisHistory', analysisHistorySchema);
 const JobDescription = mongoose.models.JobDescription || mongoose.model('JobDescription', jobDescriptionSchema);
 
-// Export only the necessary model: AnalysisHistory and User, and the new JobDescription
 module.exports = { User, AnalysisHistory, JobDescription };
