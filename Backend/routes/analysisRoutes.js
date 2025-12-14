@@ -1,18 +1,13 @@
 const express = require("express");
-const router = express.Router();
-const {
-  saveAnalysis,
-  getAnalysisHistory,
-  getAnalysisById,
-  deleteAnalysis,
-  getStatistics,
-} = require("../controller/AnalysisController");
+const multer = require("multer");
+const { authenticate } = require("../middleware/authMiddleware");
+const { analyzeResume, getHistory } = require("../controller/analysisController");
 
-router.post("/save", saveAnalysis);
-router.get("/history", getAnalysisHistory);
-router.get("/statistics", getStatistics);
-router.get("/:id", getAnalysisById);
-router.delete("/:id", deleteAnalysis);
+const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
+
+router.post("/", authenticate, upload.single("resume"), analyzeResume);
+router.get("/history", authenticate, getHistory);
 
 module.exports = router;
 
