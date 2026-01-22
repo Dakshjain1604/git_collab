@@ -10,3 +10,8 @@
 [dotenv@17.2.3] injecting env (3) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
 Backend server running on port 3000
 MongoDB connected successfully.
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+[dotenv@17.2.3] injecting env (3) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+Backend server running on port 3000
+MongoDB connected successfully.
