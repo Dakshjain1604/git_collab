@@ -174,7 +174,8 @@ const updateUserBody = zod.object({
 
 exports.updateUser = async (req, res) => {
     try {
-        const userId = getUserFromToken(req);
+        // Use userId from authenticate middleware if available, otherwise fallback to getUserFromToken
+        const userId = req.userId || getUserFromToken(req);
         if (!userId) {
             return res.status(401).json({ 
                 success: false,
@@ -230,7 +231,7 @@ exports.updateUser = async (req, res) => {
 
 exports.deleteUser = async (req, res) => {
     try {
-        const userId = getUserFromToken(req);
+        const userId = req.userId || getUserFromToken(req);
         if (!userId) {
             return res.status(401).json({ 
                 success: false,
@@ -262,7 +263,7 @@ exports.deleteUser = async (req, res) => {
 
 exports.getProfile = async (req, res) => {
     try {
-        const userId = getUserFromToken(req);
+        const userId = req.userId || getUserFromToken(req);
         if (!userId) {
             return res.status(401).json({ 
                 success: false,

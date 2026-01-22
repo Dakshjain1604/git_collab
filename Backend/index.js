@@ -1,8 +1,18 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-app.use(cors({ origin: "*", credentials: true }));
+
+// CORS configuration - allow frontend origin
+app.use(cors({ 
+    origin: ["http://localhost:5173", "http://localhost:3000", "http://localhost:5174"],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// Body parsing middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.json({

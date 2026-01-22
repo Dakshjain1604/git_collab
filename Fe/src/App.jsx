@@ -7,6 +7,7 @@ import NavBar from "./Components/NavBar";
 import Profile from "./Pages/Profile/Profile";
 import EditProfile from "./Pages/Profile/EditProfile";
 import Dashboard from "./Pages/Dashboard/Dashboard";
+import Settings from "./Pages/Settings/Settings";
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path='/user/profile' element={<Profile />} />
           <Route path='/edit/profile' element={<EditProfile />} />
           <Route path='/user/DashBoard' element={<Dashboard />} />
+          <Route path='/user/settings' element={<Settings />} />
         </Routes>
       </BrowserRouter>
 

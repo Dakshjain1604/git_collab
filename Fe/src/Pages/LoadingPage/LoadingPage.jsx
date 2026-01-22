@@ -48,11 +48,11 @@ const LoadingPage = () => {
   }, []);
 
   return (
-    <div className='relative w-screen min-h-screen overflow-x-hidden overflow-y-none bg-black'>
+    <div className='relative w-screen min-h-screen overflow-x-hidden overflow-y-none bg-[#0B0F17]'>
       <div className='absolute inset-0 x-0'>
         <Background
           raysOrigin="top-center"
-          raysColor="#00ffff"
+          raysColor="#3B82F6"
           raysSpeed={1.5}
           lightSpread={1.5}
           rayLength={5}
@@ -60,14 +60,14 @@ const LoadingPage = () => {
           mouseInfluence={0.5}
           noiseAmount={0.1}
           distortion={0.05}
-          className="custom-rays min-h-screen w-screen bg-black overflow-hidden"
+          className="custom-rays min-h-screen w-screen bg-[#0B0F17] overflow-hidden"
         />
       </div>
 
       {/* Hero Section */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-20">
         <SplitText
-          text="DMatch"
+          text="ResumeMatcher"
           className="text-5xl md:text-7xl font-bold text-center text-white mb-6"
           delay={100}
           duration={0.6}
@@ -105,13 +105,13 @@ const LoadingPage = () => {
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
           <button 
             onClick={() => navigate("/user/signup")}
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg shadow-cyan-500/50"
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg shadow-blue-500/50"
           >
             Get Started Free
           </button>
           <button 
             onClick={() => navigate('/user/signin')}
-            className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-8 py-4 rounded-lg border border-white/20 font-semibold text-lg transition-all transform hover:scale-105"
+            className="bg-gray-800/50 backdrop-blur-sm hover:bg-gray-700/50 text-white px-8 py-4 rounded-lg border border-white/10 font-semibold text-lg transition-all transform hover:scale-105"
           >
             Sign In
           </button>
@@ -139,10 +139,10 @@ const LoadingPage = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 transition-all duration-500 ${
+                className={`bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 transition-all duration-500 ${
                   currentFeature === index
-                    ? 'border-cyan-500 shadow-lg shadow-cyan-500/20 scale-105'
-                    : 'hover:border-white/20 hover:bg-white/10'
+                    ? 'border-blue-500 shadow-lg shadow-blue-500/20 scale-105'
+                    : 'hover:border-blue-500/30 hover:bg-gray-800/70'
                 }`}
               >
                 <div className="text-4xl mb-4">{feature.icon}</div>
@@ -181,9 +181,9 @@ const LoadingPage = () => {
             ].map((item, index) => (
               <div
                 key={index}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-8 text-center"
+                className="bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-xl p-8 text-center"
               >
-                <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6">
                   {item.step}
                 </div>
                 <h3 className="text-xl font-bold text-white mb-4">{item.title}</h3>
@@ -198,7 +198,7 @@ const LoadingPage = () => {
       <div className="relative z-10 py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold text-center text-white mb-16">
-            Why Choose DMatch?
+            Why Choose ResumeMatcher?
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -236,7 +236,7 @@ const LoadingPage = () => {
             ].map((benefit, index) => (
               <div
                 key={index}
-                className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 flex items-start gap-4"
+                className="bg-gray-800/50 backdrop-blur-sm border border-white/10 rounded-xl p-6 flex items-start gap-4"
               >
                 <div className="text-3xl flex-shrink-0">{benefit.icon}</div>
                 <div>
@@ -252,23 +252,23 @@ const LoadingPage = () => {
       {/* CTA Section */}
       <div className="relative z-10 py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 backdrop-blur-sm border border-cyan-500/30 rounded-2xl p-12">
+          <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-12">
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
               Ready to Land Your Dream Job?
             </h2>
             <p className="text-white/80 text-lg mb-8 max-w-2xl mx-auto">
-              Join thousands of job seekers who are using DMatch to optimize their resumes and get hired faster.
+              Join thousands of job seekers who are using ResumeMatcher to optimize their resumes and get hired faster.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button 
                 onClick={() => navigate("/user/signup")}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg shadow-cyan-500/50"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-lg shadow-blue-500/50"
               >
                 Start Free Today
               </button>
               <button 
                 onClick={() => navigate('/user/DashBoard')}
-                className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-8 py-4 rounded-lg border border-white/20 font-semibold text-lg transition-all transform hover:scale-105"
+                className="bg-gray-800/50 backdrop-blur-sm hover:bg-gray-700/50 text-white px-8 py-4 rounded-lg border border-white/10 font-semibold text-lg transition-all transform hover:scale-105"
               >
                 Try Demo
               </button>
@@ -281,7 +281,7 @@ const LoadingPage = () => {
       <div className="relative z-10 py-12 px-4 border-t border-white/10">
         <div className="max-w-6xl mx-auto text-center">
           <p className="text-white/60 text-sm">
-            © 2024 DMatch. All rights reserved. | Built with ❤️ for job seekers
+            © 2024 ResumeMatcher. All rights reserved. | Built with ❤️ for job seekers
           </p>
         </div>
       </div>

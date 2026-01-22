@@ -26,7 +26,7 @@ const NavBar = () => {
             animationSpeed={3}
             showBorder={false}
           >
-            Dmatch
+            ResumeMatcher
           </GradientText>
         </div>
 

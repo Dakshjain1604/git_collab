@@ -17,27 +17,40 @@ const EditProfile = () => {
   const [isPageLoaded, setIsPageLoaded] = useState(false); // New state to manage initial fetch/load
 
   useEffect(() => {
-    // Simulate getting user ID (e.g., from local storage or context)
-    const userId = localStorage.getItem('userId') || 'current'; 
-
     const fetchUserData = async () => {
       try {
-        // NOTE: Replace the string with your actual GET API endpoint
-        const response = await axios.get(`/api/users/${userId}`); 
-        setFormData({
-          firstName: response.data.firstName || '',
-          lastName: response.data.lastName || '',
-          email: response.data.email || ''
-        });
-        setIsPageLoaded(true); // Set to true once data is fetched
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/user/signin');
+          return;
+        }
+
+        const response = await axios.get('http://localhost:3000/user/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }); 
+        
+        if (response.data.success && response.data.user) {
+          setFormData({
+            firstName: response.data.user.firstname || '',
+            lastName: response.data.user.lastname || '',
+            email: response.data.user.username || ''
+          });
+        }
+        setIsPageLoaded(true);
       } catch (error) {
         console.error('Error fetching user data:', error);
-        setIsPageLoaded(true); // Still set to true to show the form even if data fetch fails
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/user/signin');
+        }
+        setIsPageLoaded(true);
       }
     };
 
     fetchUserData();
-  }, []);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -80,14 +93,37 @@ const EditProfile = () => {
     if (validateForm()) {
       setIsLoading(true);
       try {
-        // NOTE: Replace the string with your actual PUT/PATCH API endpoint
-        const response = await axios.put('/api/users/profile', formData); 
-        alert('Profile updated successfully!');
-        console.log('Updated data:', response.data);
-        navigate('/profile'); // Navigate back to profile page on success
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/user/signin');
+          return;
+        }
+
+        const response = await axios.post('http://localhost:3000/user/update', {
+          firstname: formData.firstName,
+          lastname: formData.lastName
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }); 
+        
+        if (response.data.success) {
+          alert('Profile updated successfully!');
+          navigate('/user/profile');
+        } else {
+          alert(response.data.message || 'Failed to update profile');
+        }
       } catch (error) {
         console.error('Error updating profile:', error);
-        alert('Failed to update profile. Please try again.');
+        const errorMessage = error.response?.data?.message || 'Failed to update profile. Please try again.';
+        alert(errorMessage);
+        
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/user/signin');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -196,7 +232,7 @@ const EditProfile = () => {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/profile')} // Use navigate for consistency
+              onClick={() => navigate('/user/profile')}
               className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-bold transition-all duration-200 shadow-lg"
             >
               Cancel

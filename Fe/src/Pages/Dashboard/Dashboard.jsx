@@ -116,31 +116,228 @@ const StateMessage = ({ icon: Icon, title, message, color = "text-blue-400" }) =
   </div>
 );
 
-const InputView = ({ setViewState }) => {
-    // This is a placeholder for the actual InputView logic
-    // In a full application, this view would handle file uploads and JD input.
-    // For this dashboard context, we'll keep it simple or integrate it within the main dashboard page.
-    return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-160px)]">
-            <div className="text-center p-10 bg-gray-800/30 rounded-xl border border-blue-500/20 backdrop-blur-md shadow-2xl max-w-xl">
-                <Upload className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">Upload Resume & Job Description</h2>
-                <p className="text-gray-400 mb-6">
-                    Start by uploading a candidate's resume (PDF/DOCX) and pasting the corresponding job description (JD) to receive an AI-powered fit analysis.
-                </p>
+const InputView = ({ setViewState, setAnalysisData, onAnalysisComplete, setJobDescription: setParentJobDescription, setJobTitle: setParentJobTitle }) => {
+  const [resumeFile, setResumeFile] = useState(null);
+  const [jobDescription, setJobDescription] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleFileSelect = (file) => {
+    if (file && (file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+      setResumeFile(file);
+    } else {
+      alert('Please select a PDF or DOCX file');
+    }
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleSubmit = async () => {
+    if (!resumeFile || !jobDescription.trim()) {
+      alert('Please select a resume file and enter a job description');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('resume', resumeFile);
+      formData.append('jdText', jobDescription);
+      if (jobTitle.trim()) {
+        formData.append('jdTitle', jobTitle);
+      }
+
+      const response = await axios.post('http://localhost:3000/analysis', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.data.success && response.data.analysis) {
+        // Set the analysis data and switch to analysis view
+        setAnalysisData(response.data.analysis);
+        const finalJobTitle = jobTitle || response.data.analysis.job_title || 'Job Analysis';
+        const finalJobDescription = response.data.analysis.job_description || jobDescription;
+        
+        // Update parent state (Dashboard's state)
+        if (setParentJobTitle) setParentJobTitle(finalJobTitle);
+        if (setParentJobDescription) setParentJobDescription(finalJobDescription);
+        
+        setViewState('analysis');
+
+        // Refresh history and stats
+        onAnalysisComplete();
+      } else {
+        alert('Analysis failed: ' + (response.data.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to analyze resume. Please try again.';
+      alert(errorMessage);
+      
+      // If unauthorized, redirect to signin
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/user/signin';
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <SectionHeader
+        icon={Upload}
+        title="Resume Analysis"
+        description="Upload a candidate's resume and paste the job description to get AI-powered insights."
+      />
+
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* File Upload Section */}
+        <div className="space-y-4">
+          <h3 className="text-xl font-semibold text-white mb-4">Resume Upload</h3>
+
+          <div
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
+              dragActive
+                ? 'border-blue-400 bg-blue-500/10'
+                : resumeFile
+                ? 'border-green-400 bg-green-500/5'
+                : 'border-gray-600 hover:border-blue-400 hover:bg-blue-500/5'
+            }`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.docx"
+              onChange={(e) => handleFileSelect(e.target.files[0])}
+              className="hidden"
+            />
+
+            {resumeFile ? (
+              <div className="space-y-3">
+                <FileText className="w-12 h-12 text-green-400 mx-auto" />
+                <div>
+                  <p className="text-white font-medium">{resumeFile.name}</p>
+                  <p className="text-gray-400 text-sm">{(resumeFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                </div>
                 <button
-                    onClick={() => { /* Placeholder action, e.g., open file picker */ }}
-                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-700 transition-colors transform hover:scale-[1.02]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setResumeFile(null);
+                  }}
+                  className="text-red-400 hover:text-red-300 text-sm"
                 >
-                    Start New Analysis
+                  Remove file
                 </button>
-                <p className="text-xs text-gray-500 mt-4">Note: This is a placeholder UI. Functionality is integrated with the main App.</p>
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Upload className="w-12 h-12 text-blue-400 mx-auto" />
+                <div>
+                  <p className="text-white font-medium">Click to upload or drag and drop</p>
+                  <p className="text-gray-400 text-sm">PDF or DOCX files only (max 10MB)</p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-    );
+
+        {/* Job Description Section */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-white font-medium mb-2">Job Title (Optional)</label>
+            <input
+              type="text"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              placeholder="e.g., Senior Full Stack Developer"
+              className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400"
+            />
+          </div>
+
+          <div>
+            <label className="block text-white font-medium mb-2">Job Description *</label>
+            <textarea
+              value={jobDescription}
+              onChange={(e) => setJobDescription(e.target.value)}
+              placeholder="Paste the complete job description here..."
+              rows={12}
+              className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 resize-vertical"
+            />
+            <p className="text-gray-400 text-sm mt-2">
+              {jobDescription.length} characters
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Submit Button */}
+      <div className="flex justify-center pt-4">
+        <button
+          onClick={handleSubmit}
+          disabled={!resumeFile || !jobDescription.trim() || uploading}
+          className={`px-8 py-4 rounded-lg font-semibold text-lg transition-all transform ${
+            !resumeFile || !jobDescription.trim() || uploading
+              ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-xl hover:scale-105'
+          }`}
+        >
+          {uploading ? (
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              <span>Analyzing Resume...</span>
+            </div>
+          ) : (
+            'Start AI Analysis'
+          )}
+        </button>
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-6">
+        <h4 className="text-blue-400 font-semibold mb-3">How it works:</h4>
+        <ol className="list-decimal list-inside space-y-2 text-gray-300 text-sm">
+          <li>Upload the candidate's resume (PDF or DOCX format)</li>
+          <li>Paste the complete job description you're hiring for</li>
+          <li>Our AI analyzes the resume against the job requirements</li>
+          <li>Get detailed insights, scores, and recommendations</li>
+        </ol>
+      </div>
+    </div>
+  );
 };
 
-const AnalysisView = ({ analysisData, jobTitle }) => {
+const AnalysisView = ({ analysisData, jobTitle, jobDescription }) => {
   if (!analysisData) {
     return <StateMessage icon={X} title="No Analysis Data" message="Please perform an analysis first to view the results." color="text-red-400" />;
   }
@@ -170,6 +367,30 @@ const AnalysisView = ({ analysisData, jobTitle }) => {
   const safe_weaknesses = weaknesses || [];
   const safe_recommendations = recommendations || [];
 
+  const scrollToSection = (sectionId) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      // Use scrollIntoView with offset calculation
+      const yOffset = -120; // Offset for sticky headers
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      
+      window.scrollTo({
+        top: y,
+        behavior: 'smooth'
+      });
+    } else {
+      console.warn(`Section with id "${sectionId}" not found`);
+    }
+  };
+
+  const navigationTabs = [
+    { id: 'overall-score', label: 'Overall Score', icon: PieChart },
+    { id: 'critique', label: 'Critique', icon: Lightbulb },
+    { id: 'keywords', label: 'Keywords', icon: Target },
+    ...(structured_resume ? [{ id: 'resume-data', label: 'Resume Data', icon: FileText }] : []),
+    ...(jobDescription ? [{ id: 'job-openings', label: 'Job Openings', icon: Search }] : [])
+  ];
+
   return (
     <div className="space-y-12">
       {/* Header */}
@@ -178,8 +399,29 @@ const AnalysisView = ({ analysisData, jobTitle }) => {
         <p className="text-gray-400">Deep-dive assessment of the resume against the target job description.</p>
       </div>
 
+      {/* Navigation Tabs */}
+      <div className="sticky top-4 z-40 bg-gray-800/50 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg">
+        <div className="flex flex-wrap items-center gap-2 justify-center md:justify-start">
+          <span className="text-gray-400 text-sm font-medium mr-2 hidden md:inline">Jump to:</span>
+          {navigationTabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => scrollToSection(tab.id)}
+                className="flex items-center space-x-2 px-4 py-2.5 bg-gray-700/50 hover:bg-gradient-to-r hover:from-blue-600/50 hover:to-purple-600/50 border border-white/10 hover:border-blue-500/30 rounded-lg text-white text-sm font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+              >
+                <Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* 1. Overall Score & Breakdown */}
-      <SectionHeader 
+      <div id="overall-score" className="scroll-mt-24">
+        <SectionHeader 
         icon={PieChart} 
         title="Overall Fit Score" 
         description="A holistic rating of the candidate's resume match and quality against the JD." 
@@ -229,9 +471,11 @@ const AnalysisView = ({ analysisData, jobTitle }) => {
           />
         </div>
       </div>
+      </div>
 
       {/* 2. Critique & Recommendations */}
-      <SectionHeader 
+      <div id="critique" className="scroll-mt-24">
+        <SectionHeader 
         icon={Lightbulb} 
         title="Critique & Actionable Insights" 
         description="Strengths, areas for improvement, and clear recommendations for the next step." 
@@ -259,9 +503,11 @@ const AnalysisView = ({ analysisData, jobTitle }) => {
           background="bg-blue-900/10"
         />
       </div>
+      </div>
 
       {/* 3. Keywords & Summary */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div id="keywords" className="scroll-mt-24">
+        <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
             <h3 className="text-xl font-semibold text-white mb-4 border-b border-white/10 pb-2">Summary Critique</h3>
             <p className="p-4 text-gray-300 bg-gray-800/50 rounded-xl border border-white/10 shadow-inner leading-relaxed">
@@ -287,11 +533,12 @@ const AnalysisView = ({ analysisData, jobTitle }) => {
             </div>
         </div>
       </div>
+      </div>
 
 
       {/* 4. Structured Resume Data */}
       {structured_resume && (
-        <>
+        <div id="resume-data" className="scroll-mt-24">
           <SectionHeader 
             icon={FileText} 
             title="Extracted Candidate Data" 
@@ -407,7 +654,14 @@ const AnalysisView = ({ analysisData, jobTitle }) => {
                   </div>
               </div>
           </div>
-        </>
+        </div>
+      )}
+
+      {/* 5. Relevant Job Openings */}
+      {jobDescription && (
+        <div id="job-openings" className="scroll-mt-24">
+          <JobSearchSection jobDescription={jobDescription} jobTitle={jobTitle} />
+        </div>
       )}
 
       {/* Spacing for bottom */}
@@ -416,34 +670,218 @@ const AnalysisView = ({ analysisData, jobTitle }) => {
   );
 };
 
+// Job Search Component
+const JobSearchSection = ({ jobDescription, jobTitle }) => {
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    if (jobDescription && jobDescription.trim().length > 10 && !searched) {
+      searchJobs();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobDescription]);
+
+  const searchJobs = async () => {
+    if (loading || searched) return;
+    
+    setLoading(true);
+    setError(null);
+    setSearched(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Please sign in to search for jobs');
+        return;
+      }
+
+      const response = await axios.post('http://localhost:3000/jobs/search', {
+        jobDescription: jobDescription,
+        limit: 10
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.success && response.data.data) {
+        setJobs(response.data.data.jobs || []);
+      }
+    } catch (err) {
+      console.error('Job search error:', err);
+      setError(err.response?.data?.message || 'Failed to search for jobs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatSalary = (salary) => {
+    if (!salary) return 'Salary not specified';
+    const min = salary.min ? new Intl.NumberFormat('en-US', { style: 'currency', currency: salary.currency || 'USD', maximumFractionDigits: 0 }).format(salary.min) : '';
+    const max = salary.max ? new Intl.NumberFormat('en-US', { style: 'currency', currency: salary.currency || 'USD', maximumFractionDigits: 0 }).format(salary.max) : '';
+    if (min && max) return `${min} - ${max}`;
+    if (min) return `From ${min}`;
+    if (max) return `Up to ${max}`;
+    return 'Salary not specified';
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Recently';
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 0) return 'Today';
+      if (diffDays === 1) return 'Yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+      return date.toLocaleDateString();
+    } catch {
+      return 'Recently';
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <SectionHeader 
+        icon={Search} 
+        title="Relevant Job Openings" 
+        description={`Based on the job description for "${jobTitle || 'this position'}", here are some current openings that match your criteria.`} 
+      />
+
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+          <span className="ml-4 text-gray-400">Searching for relevant jobs...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="p-4 bg-red-500/20 border border-red-500/30 rounded-xl">
+          <p className="text-red-400">{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && jobs.length === 0 && searched && (
+        <div className="p-8 bg-gray-800/50 border border-white/10 rounded-xl text-center">
+          <Search className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-400">No job openings found. Try adjusting your search criteria.</p>
+        </div>
+      )}
+
+      {!loading && !error && jobs.length > 0 && (
+        <div className="grid gap-4">
+          {jobs.map((job, index) => (
+            <div
+              key={index}
+              className="p-6 bg-gray-800/50 border border-white/10 rounded-xl hover:border-blue-500/30 transition-all duration-300"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    {job.url && job.url !== '#' && (job.url.startsWith('http://') || job.url.startsWith('https://')) ? (
+                      <a 
+                        href={job.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          if (!job.url || job.url === '#' || (!job.url.startsWith('http://') && !job.url.startsWith('https://'))) {
+                            e.preventDefault();
+                            return false;
+                          }
+                        }}
+                        className="flex items-center hover:text-blue-400 transition-colors"
+                      >
+                        {job.title}
+                        <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </a>
+                    ) : (
+                      <span className="flex items-center">
+                        {job.title}
+                        <span className="ml-2 text-xs text-gray-500">(URL not available)</span>
+                      </span>
+                    )}
+                  </h3>
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400 mb-3">
+                    <div className="flex items-center">
+                      <Briefcase className="w-4 h-4 mr-2" />
+                      {job.company}
+                    </div>
+                    <div className="flex items-center">
+                      <Mail className="w-4 h-4 mr-2" />
+                      {job.location}
+                    </div>
+                    {job.salary && (
+                      <div className="flex items-center text-green-400">
+                        <span className="font-semibold">{formatSalary(job.salary)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="ml-4 flex flex-col items-end">
+                  <span className="px-3 py-1 bg-blue-600/20 text-blue-400 text-xs font-medium rounded-full mb-2">
+                    {job.source}
+                  </span>
+                  <span className="text-xs text-gray-500">{formatDate(job.posted)}</span>
+                </div>
+              </div>
+              <p className="text-gray-300 text-sm line-clamp-3 mb-4">
+                {job.description}
+              </p>
+              {job.url && job.url !== '#' && (job.url.startsWith('http://') || job.url.startsWith('https://')) ? (
+                <a
+                  href={job.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    if (!job.url || job.url === '#' || (!job.url.startsWith('http://') && !job.url.startsWith('https://'))) {
+                      e.preventDefault();
+                      return false;
+                    }
+                  }}
+                  className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-lg transition-all"
+                >
+                  Apply Now
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              ) : (
+                <button
+                  disabled
+                  className="inline-flex items-center px-4 py-2 bg-gray-600/50 text-gray-400 font-medium rounded-lg cursor-not-allowed"
+                  title="Job URL not available"
+                >
+                  URL Not Available
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {jobs.length > 0 && (
+        <div className="text-center pt-4">
+          <p className="text-gray-400 text-sm">
+            Found {jobs.length} relevant job{jobs.length !== 1 ? 's' : ''} based on your job description
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 const HistoryView = ({ historyData, onSelectAnalysis }) => {
-  // Mock data for this component since fetching history is done elsewhere in the app
-  const mockHistory = [
-    { 
-      _id: "a1", 
-      resume_filename: "Jane_Doe_Resume.pdf", 
-      job_title: "Senior Full Stack Developer", 
-      overall_score: 85, 
-      analysis_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    { 
-      _id: "a2", 
-      resume_filename: "John_Smith_CV.docx", 
-      job_title: "UX/UI Designer", 
-      overall_score: 52, 
-      analysis_date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    { 
-      _id: "a3", 
-      resume_filename: "Alex_Johnson_Resume_New.pdf", 
-      job_title: "Data Scientist Intern", 
-      overall_score: 92, 
-      analysis_date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ];
-
-  const history = historyData || mockHistory;
+  const history = historyData || [];
 
   const getScoreClass = (score) => {
     if (score >= 80) return "bg-green-600/20 text-green-300 ring-green-500/30";
@@ -492,131 +930,120 @@ const HistoryView = ({ historyData, onSelectAnalysis }) => {
 // --- Main Dashboard Component ---
 
 const Dashboard = () => {
-  const [viewState, setViewState] = useState("dashboard"); // 'dashboard', 'input', 'analysis', 'history'
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [viewState, setViewState] = useState("input"); // 'dashboard', 'input', 'analysis', 'history'
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [analysisData, setAnalysisData] = useState(null); // The currently viewed analysis report
-  const [jobTitle, setJobTitle] = useState("Software Engineer"); // Job title for the current analysis
+  const [jobTitle, setJobTitle] = useState(""); // Job title for the current analysis
+  const [jobDescription, setJobDescription] = useState(""); // Job description for job search
   const [historyData, setHistoryData] = useState(null); // All historical analyses
   const [statsData, setStatsData] = useState(null); // Aggregate statistics
+  const [loading, setLoading] = useState(false);
 
-  // Mock Data for Dashboard View
+  // Load user data on component mount
   useEffect(() => {
-    // Simulate fetching dashboard stats and history
-    const mockStats = {
-      totalAnalyses: 42,
-      averageScore: 71,
-      highestScore: 95,
-      lowestScore: 35,
-      averageSkillsScore: 78,
-      averageExperienceScore: 68,
-      averageEducationScore: 75,
-      analysesThisMonth: 12,
-      analysesThisWeek: 3,
-      scoreDistribution: {
-        excellent: 15,
-        good: 18,
-        average: 7,
-        poor: 2,
-      }
-    };
-    setStatsData(mockStats);
-    
-    // Set a mock analysis report for initial 'analysis' view test
-    const mockReport = {
-        overall_score: 74,
-        skills_score: 80,
-        experience_score: 65,
-        education_score: 77,
-        matched_keywords: ["React", "Tailwind CSS", "FastAPI", "MongoDB", "Asynchronous Programming"],
-        missing_keywords: ["Cloud Deployment (AWS/Azure)", "CI/CD", "Docker", "Kubernetes"],
-        strengths: [
-            "Strong foundational knowledge in modern frontend frameworks (React).",
-            "Demonstrated experience in full-stack development with a focus on Python/FastAPI.",
-            "Excellent match for required technical skills in the JD."
-        ],
-        weaknesses: [
-            "Limited explicit mention of DevOps and cloud infrastructure experience.",
-            "Work experience entries are brief and lack quantifiable achievements."
-        ],
-        recommendations: [
-            "Add a 'DevOps' section to highlight tools like Docker and Kubernetes.",
-            "Revise experience descriptions to include impact metrics (e.g., 'Increased performance by 30%').",
-            "Consider a brief project on serverless architecture to fill the cloud gap."
-        ],
-        summary_critique: "The candidate presents a strong profile for a mid-level role. The technical skills are excellent, but the resume would benefit significantly from emphasizing project impact and filling the infrastructure gap mentioned in the JD.",
-        structured_resume: {
-            contact_info: {
-                name: "Alex J. Tech",
-                phone: "(555) 123-4567",
-                email: "alex.tech@devmail.com",
-                linkedin: "https://linkedin.com/in/alexjtech",
-                portfolio: "https://alexjtech.com/portfolio"
-            },
-            summary: "Highly motivated Full Stack Developer with 5 years of experience building scalable web applications using React, Python/FastAPI, and MongoDB. Passionate about clean code and efficient, modern architecture.",
-            experience: [
-                {
-                    title: "Software Engineer",
-                    company: "Innovatech Solutions",
-                    dates: "Jan 2021 - Present",
-                    description_summary: "Led the development of a real-time analytics dashboard using React and WebSockets, resulting in a 25% increase in user engagement."
-                },
-                {
-                    title: "Junior Developer",
-                    company: "Startup Co.",
-                    dates: "Jun 2019 - Dec 2020",
-                    description_summary: "Contributed to the migration of legacy services to a Python-based microservice architecture, improving deployment reliability."
-                }
-            ],
-            education: [
-                {
-                    degree: "B.S. Computer Science",
-                    institution: "State University, Tech Campus",
-                    year_or_dates: "2015 - 2019"
-                }
-            ],
-            projects: [
-                {
-                    project_name: "AI Resume Scanner",
-                    description: "Built a FastAPI backend with integrated LLM calling for structured resume parsing and job fit analysis.",
-                    technologies: ["FastAPI", "Python", "LLM Integration", "Pydantic"]
-                },
-                {
-                    project_name: "Personal Portfolio v3",
-                    description: "A modern, highly performant static site built with Next.js and Tailwind CSS.",
-                    technologies: ["Next.js", "Tailwind CSS", "Framer Motion"]
-                }
-            ],
-            skills: ["React", "TypeScript", "Python", "FastAPI", "MongoDB", "SQL", "Git", "Jest", "Tailwind CSS", "Docker (Basic)"]
-        }
-    };
-    setAnalysisData(mockReport);
-    
-    // Set view to 'analysis' to show the report initially
-    // setViewState("analysis");
-    
-    // History data is mocked in HistoryView for simplicity now.
+    loadUserData();
   }, []);
 
-  const handleSelectAnalysis = (analysis) => {
-    // In a real app, this would fetch the full analysis details from the backend
-    console.log("Loading analysis:", analysis._id);
-    // For mock, we just set the stored data
-    setAnalysisData({
-        ...analysis, // use history data fields
-        // Mock the deeper analysis fields (they would come from the full object)
-        matched_keywords: ["Mock", "Data", "Example"], 
-        missing_keywords: ["Real", "Keywords"],
-        strengths: ["Great mock data!"],
-        weaknesses: ["Not real data."],
-        recommendations: ["Upload a real resume."],
-        summary_critique: "This is a summary critique of the mock report.",
-        structured_resume: {
-            contact_info: { name: analysis.resume_filename.replace('.pdf', '') },
-            summary: "This is a placeholder summary for the loaded history item.",
-            experience: [], education: [], projects: [], skills: []
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      // Load history and stats
+      await Promise.all([loadHistory(), loadStats()]);
+    } catch (error) {
+      console.error("Failed to load user data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadHistory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log("No auth token found");
+        return;
+      }
+
+      const response = await axios.get('http://localhost:3000/analysis/history', {
+        headers: {
+          Authorization: `Bearer ${token}`
         }
+      });
+      if (response.data.success) {
+        setHistoryData(response.data.analyses || []);
+      }
+    } catch (error) {
+      console.error("Failed to load history:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/user/signin';
+      }
+    }
+  };
+
+  const loadStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.log("No auth token found");
+        return;
+      }
+
+      const response = await axios.get('http://localhost:3000/analysis/stats', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (response.data.success) {
+        setStatsData(response.data.stats);
+      }
+    } catch (error) {
+      console.error("Failed to load stats:", error);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        window.location.href = '/user/signin';
+        return;
+      }
+      // If no stats available yet, set empty stats
+      setStatsData({
+        totalAnalyses: 0,
+        averageScore: 0,
+        highestScore: 0,
+        lowestScore: 0,
+        averageSkillsScore: 0,
+        averageExperienceScore: 0,
+        averageEducationScore: 0,
+        analysesThisMonth: 0,
+        analysesThisWeek: 0,
+        scoreDistribution: {
+          excellent: 0,
+          good: 0,
+          average: 0,
+          poor: 0,
+        }
+      });
+    }
+  };
+
+  const handleSelectAnalysis = (analysis) => {
+    console.log("Loading analysis:", analysis._id);
+    // Use the stored data from the history item
+    // Map the history entry to the expected analysis data structure
+    setAnalysisData({
+      overall_score: analysis.overall_score,
+      skills_score: analysis.skills_score,
+      experience_score: analysis.experience_score,
+      education_score: analysis.education_score,
+      matched_keywords: analysis.matched_keywords || [],
+      missing_keywords: analysis.missing_keywords || [],
+      strengths: analysis.strengths || [],
+      weaknesses: analysis.weaknesses || [],
+      recommendations: analysis.recommendations || [],
+      summary_critique: analysis.summary_critique || '',
+      structured_resume: analysis.structured_resume || {}
     });
-    setJobTitle(analysis.job_title);
+    setJobTitle(analysis.job_title || analysis.jd_title_used || 'Job Analysis');
+    setJobDescription(analysis.jd_text_used || '');
     setViewState("analysis");
   };
 
@@ -681,9 +1108,15 @@ const Dashboard = () => {
   const renderContent = () => {
     switch (viewState) {
       case "input":
-        return <InputView setViewState={setViewState} />;
+        return <InputView 
+          setViewState={setViewState} 
+          setAnalysisData={setAnalysisData} 
+          onAnalysisComplete={() => { loadHistory(); loadStats(); }}
+          setJobDescription={setJobDescription}
+          setJobTitle={setJobTitle}
+        />;
       case "analysis":
-        return <AnalysisView analysisData={analysisData} jobTitle={jobTitle} />;
+        return <AnalysisView analysisData={analysisData} jobTitle={jobTitle} jobDescription={jobDescription} />;
       case "history":
         return <HistoryView historyData={historyData} onSelectAnalysis={handleSelectAnalysis} />;
       case "dashboard":
@@ -698,6 +1131,15 @@ const Dashboard = () => {
     { name: "Last Report", view: "analysis", icon: FileText },
     { name: "History", view: "history", icon: Clock },
   ];
+
+  const handleNavClick = (item) => {
+    if (item.view === 'settings') {
+      window.location.href = '/user/settings';
+    } else {
+      setViewState(item.view);
+      setSidebarOpen(false);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-[#0B0F17] text-white font-sans">
@@ -714,7 +1156,7 @@ const Dashboard = () => {
           >
             <div className="p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-8">
-                <h1 className="text-2xl font-bold text-blue-400">AI Recruiter</h1>
+                <h1 className="text-2xl font-bold text-blue-400">ResumeMatcher</h1>
                 <button 
                   onClick={() => setSidebarOpen(false)} 
                   className="p-1 rounded-full text-gray-400 hover:bg-gray-700 md:hidden"
@@ -727,7 +1169,7 @@ const Dashboard = () => {
                 {navItems.map(item => (
                   <button
                     key={item.view}
-                    onClick={() => { setViewState(item.view); setSidebarOpen(false); }}
+                    onClick={() => handleNavClick(item)}
                     className={`flex items-center w-full px-4 py-3 rounded-xl transition-colors text-left ${
                       viewState === item.view 
                         ? 'bg-blue-600/50 text-white font-semibold shadow-md' 
@@ -738,16 +1180,33 @@ const Dashboard = () => {
                     {item.name}
                   </button>
                 ))}
+                <button
+                  onClick={() => window.location.href = '/user/settings'}
+                  className="flex items-center w-full px-4 py-3 rounded-xl transition-colors text-left text-gray-300 hover:bg-gray-700/50"
+                >
+                  <User className="w-5 h-5 mr-3" />
+                  Settings
+                </button>
               </nav>
 
-              <div className="mt-auto pt-4 border-t border-gray-700">
-                  <div className="flex items-center space-x-3">
+              <div className="mt-auto pt-4 border-t border-gray-700 space-y-2">
+                  <div className="flex items-center space-x-3 mb-3">
                       <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-lg font-bold">JD</div>
                       <div>
                           <p className="text-white font-semibold">Recruiter Dashboard</p>
                           <p className="text-xs text-gray-400">Welcome back!</p>
                       </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem('token');
+                      window.location.href = '/user/signin';
+                    }}
+                    className="w-full flex items-center justify-center px-4 py-2 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 transition-colors text-sm font-medium"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Logout
+                  </button>
               </div>
             </div>
           </motion.div>

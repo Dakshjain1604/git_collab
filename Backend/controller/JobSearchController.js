@@ -54,7 +54,8 @@ const getUserFromToken = (req) => {
  */
 exports.searchJobs = async (req, res) => {
   try {
-    const userId = getUserFromToken(req);
+    // Use userId from authenticate middleware if available, otherwise fallback
+    const userId = req.userId || getUserFromToken(req);
     if (!userId) {
       return res.status(401).json({ 
         success: false,
@@ -274,7 +275,7 @@ async function searchAdzuna(query, location, limit) {
         company: job.company?.display_name || "Unknown Company",
         location: job.location?.display_name || location || "Remote",
         description: job.description || "No description available",
-        url: job.redirect_url || job.url || "#",
+        url: (job.redirect_url || job.url || "").startsWith('http') ? (job.redirect_url || job.url) : `https://www.adzuna.com/search?q=${encodeURIComponent(query)}`,
         salary: job.salary_min || job.salary_max ? {
           min: job.salary_min || null,
           max: job.salary_max || null,
@@ -332,10 +333,11 @@ async function searchSerpAPI(query, location, limit) {
         company: job.company_name || "Unknown Company",
         location: job.location || location || "Remote",
         description: job.description || "No description available",
-        url: job.apply_options?.[0]?.link || 
+        url: (job.apply_options?.[0]?.link || 
              job.related_links?.[0]?.link || 
-             job.share_link || 
-             "#",
+             job.share_link || "").startsWith('http') 
+             ? (job.apply_options?.[0]?.link || job.related_links?.[0]?.link || job.share_link)
+             : `https://www.google.com/search?q=${encodeURIComponent(query + " jobs")}`,
         salary: job.detected_extensions?.salary ? {
           min: job.detected_extensions.salary,
           max: job.detected_extensions.salary,
@@ -404,7 +406,7 @@ function generateJobSuggestions(keywords, jobDescription, location, limit) {
       company,
       location: jobLocation,
       description: `[FALLBACK] Seeking a ${title.toLowerCase()} with expertise in ${keywordList}. Original JD: ${descriptionPreview}`,
-      url: `#suggested-job-${i + 1}`, 
+      url: `https://www.google.com/search?q=${encodeURIComponent(title + " jobs " + (location || ""))}`, 
       salary: {
         min: 70000 + Math.floor(Math.random() * 40000),
         max: 110000 + Math.floor(Math.random() * 70000),

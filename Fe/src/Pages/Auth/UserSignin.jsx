@@ -66,29 +66,29 @@ const UserSignin = () => {
   };
 
   return (
-    <div className='relative flex flex-col min-h-screen w-full justify-center items-center overflow-hidden bg-black'>
-      {/* Background is now solid black */}
+    <div className='relative flex flex-col min-h-screen w-full justify-center items-center overflow-hidden bg-[#0B0F17]'>
+      {/* Background gradient matching dashboard */}
+      <div className='absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-[#0B0F17] to-[#0B0F17]'></div>
       {/* Floating Shapes (subtle) */}
-      <div className='absolute top-10 left-10 w-72 h-72 bg-white/2 rounded-full blur-3xl opacity-5'></div>
-      <div className='absolute bottom-10 right-10 w-96 h-96 bg-white/2 rounded-full blur-3xl opacity-5'></div>
+      <div className='absolute top-10 left-10 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl opacity-20'></div>
+      <div className='absolute bottom-10 right-10 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl opacity-20'></div>
 
-      {/* Sign In Card (transparent/glass) */}
+      {/* Sign In Card (matching dashboard style) */}
       <div className="relative z-10 w-full max-w-md mx-4">
         <div
-          className="bg-transparent/20 border border-white/10 shadow-none rounded-3xl p-8 transform transition-all duration-300
-                     hover:shadow-2xl hover:shadow-white/5 hover:backdrop-blur-sm hover:scale-[1.02]"
-          style={{ background: 'rgba(255,255,255,0.03)' }}
+          className="bg-gray-800/50 border border-white/10 shadow-2xl rounded-3xl p-8 transform transition-all duration-300
+                     hover:shadow-blue-500/10 hover:border-blue-500/30 hover:scale-[1.02] backdrop-blur-sm"
         >
 
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-white/6 rounded-full mb-4">
-              <svg className="w-8 h-8 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600/20 border border-blue-500/30 rounded-full mb-4">
+              <svg className="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-            <p className="text-white/60 text-sm">Sign in to continue to your account</p>
+            <p className="text-gray-400 text-sm">Sign in to ResumeMatcher</p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="space-y-6">
@@ -112,9 +112,9 @@ const UserSignin = () => {
                   placeholder='john.doe@example.com'
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className={`w-full px-4 py-3 bg-transparent border ${
-                    errors.username ? 'border-red-500/60' : 'border-white/20'
-                  } rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/2 transition-all duration-200`}
+                  className={`w-full px-4 py-3 bg-gray-800/50 border ${
+                    errors.username ? 'border-red-500/60' : 'border-white/10'
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 transition-all duration-200`}
                 />
               </div>
               {errors.username && (
@@ -136,9 +136,9 @@ const UserSignin = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setpassword(e.target.value)}
-                  className={`w-full px-4 py-3 pr-12 bg-transparent border ${
-                    errors.password ? 'border-red-500/60' : 'border-white/20'
-                  } rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white/2 transition-all duration-200`}
+                  className={`w-full px-4 py-3 pr-12 bg-gray-800/50 border ${
+                    errors.password ? 'border-red-500/60' : 'border-white/10'
+                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 transition-all duration-200`}
                   placeholder="••••••••"
                 />
                 <button
@@ -176,7 +176,7 @@ const UserSignin = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-indigo-500/30 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-blue-500/30 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -205,7 +205,7 @@ const UserSignin = () => {
             <button
               type="button"
               onClick={() => navigate('/user/signup')}
-              className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all duration-300 backdrop-blur-sm transform hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full bg-gray-800/50 hover:bg-gray-700/50 border border-white/10 text-white font-semibold py-3 rounded-xl transition-all duration-300 backdrop-blur-sm transform hover:scale-[1.02] active:scale-[0.98]"
             >
               Create New Account
             </button>
@@ -226,7 +226,7 @@ const UserSignin = () => {
           className="fixed inset-0 z-50 flex items-center justify-center px-4"
         >
           <div className="absolute inset-0 bg-black/70" onClick={closePopup} />
-          <div className="relative z-10 w-full max-w-lg bg-white/6 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
+          <div className="relative z-10 w-full max-w-lg bg-gray-800/50 border border-white/10 rounded-2xl p-6 backdrop-blur-md">
             <h3 className="text-lg font-semibold text-white mb-2">Error</h3>
             <p className="text-white/80 mb-4">{apiError}</p>
             <div className="flex justify-end gap-3">

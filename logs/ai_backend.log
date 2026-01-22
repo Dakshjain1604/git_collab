@@ -1,0 +1,9 @@
+INFO:     Started server process [11475]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2026-01-22 09:43:12,190 - __main__ - INFO - File saved temporarily to Uploaded_files/ae8c8437-c5bd-4eb0-9cab-0f1273cd34ad.pdf
+2026-01-22 09:43:26,018 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-22 09:43:37,641 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2026-01-22 09:43:37,679 - __main__ - INFO - Cleaned up temporary file: Uploaded_files/ae8c8437-c5bd-4eb0-9cab-0f1273cd34ad.pdf
+INFO:     127.0.0.1:59805 - "POST /analyze-resume HTTP/1.1" 200 OK
