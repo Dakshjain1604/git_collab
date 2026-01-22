@@ -36,7 +36,7 @@ const UserSignup = () => {
     setUserExists(false);
 
     try {
-      const response = await axios.post('http://localhost:3000/user/signup', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/signup`, {
         firstname,
         lastname,
         username,
@@ -64,7 +64,7 @@ const UserSignup = () => {
 
       {/* Background gradient matching dashboard */}
       <div className='absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/10 via-[#0B0F17] to-[#0B0F17]'></div>
-      
+
       {/* SUBTLE BACKGROUND CIRCLES */}
       <div className="absolute top-20 left-20 w-96 h-96 bg-blue-500/5 rounded-full blur-[140px] opacity-20"></div>
       <div className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[160px] opacity-20"></div>
@@ -76,7 +76,7 @@ const UserSignup = () => {
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 rounded-full border border-blue-500/30 flex items-center justify-center bg-blue-600/20 backdrop-blur">
             <svg className="w-9 h-9 text-blue-400" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24">
-              <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zM4 22c0-4.4 3.6-8 8-8s8 3.6 8 8"/>
+              <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zM4 22c0-4.4 3.6-8 8-8s8 3.6 8 8" />
             </svg>
           </div>
         </div>
@@ -104,9 +104,8 @@ const UserSignup = () => {
               type="text"
               value={firstname}
               onChange={(e) => setfirstname(e.target.value)}
-              className={`w-full mt-1 px-4 py-3 bg-gray-800/50 border ${
-                errors.firstName ? "border-red-500/50" : "border-white/10"
-              } rounded-xl text-white placeholder-gray-400 backdrop-blur focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 outline-none`}
+              className={`w-full mt-1 px-4 py-3 bg-gray-800/50 border ${errors.firstName ? "border-red-500/50" : "border-white/10"
+                } rounded-xl text-white placeholder-gray-400 backdrop-blur focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 outline-none`}
               placeholder="John"
             />
             {errors.firstName && <p className="text-red-400 text-sm mt-1">{errors.firstName}</p>}
@@ -119,9 +118,8 @@ const UserSignup = () => {
               type="text"
               value={lastname}
               onChange={(e) => setlastname(e.target.value)}
-              className={`w-full mt-1 px-4 py-3 bg-gray-800/50 border ${
-                errors.lastName ? "border-red-500/50" : "border-white/10"
-              } rounded-xl text-white placeholder-gray-400 backdrop-blur focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 outline-none`}
+              className={`w-full mt-1 px-4 py-3 bg-gray-800/50 border ${errors.lastName ? "border-red-500/50" : "border-white/10"
+                } rounded-xl text-white placeholder-gray-400 backdrop-blur focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 outline-none`}
               placeholder="Doe"
             />
             {errors.lastName && <p className="text-red-400 text-sm mt-1">{errors.lastName}</p>}
@@ -134,9 +132,8 @@ const UserSignup = () => {
               type="email"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className={`w-full mt-1 px-4 py-3 bg-gray-800/50 border ${
-                errors.username ? "border-red-500/50" : "border-white/10"
-              } rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 backdrop-blur outline-none`}
+              className={`w-full mt-1 px-4 py-3 bg-gray-800/50 border ${errors.username ? "border-red-500/50" : "border-white/10"
+                } rounded-xl text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 backdrop-blur outline-none`}
               placeholder="john@example.com"
             />
             {errors.username && <p className="text-red-400 text-sm mt-1">{errors.username}</p>}
@@ -149,9 +146,8 @@ const UserSignup = () => {
               type="password"
               value={password}
               onChange={(e) => setpassword(e.target.value)}
-              className={`w-full mt-1 px-4 py-3 bg-gray-800/50 border ${
-                errors.password ? "border-red-500/50" : "border-white/10"
-              } rounded-xl text-white placeholder-gray-400 backdrop-blur focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 outline-none`}
+              className={`w-full mt-1 px-4 py-3 bg-gray-800/50 border ${errors.password ? "border-red-500/50" : "border-white/10"
+                } rounded-xl text-white placeholder-gray-400 backdrop-blur focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 outline-none`}
               placeholder="••••••••"
             />
             {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password}</p>}

@@ -34,7 +34,7 @@ const UserSignin = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/user/signin', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/signin`, {
         username,
         password,
       }, {
@@ -112,9 +112,8 @@ const UserSignin = () => {
                   placeholder='john.doe@example.com'
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className={`w-full px-4 py-3 bg-gray-800/50 border ${
-                    errors.username ? 'border-red-500/60' : 'border-white/10'
-                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 transition-all duration-200`}
+                  className={`w-full px-4 py-3 bg-gray-800/50 border ${errors.username ? 'border-red-500/60' : 'border-white/10'
+                    } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 transition-all duration-200`}
                 />
               </div>
               {errors.username && (
@@ -136,9 +135,8 @@ const UserSignin = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setpassword(e.target.value)}
-                  className={`w-full px-4 py-3 pr-12 bg-gray-800/50 border ${
-                    errors.password ? 'border-red-500/60' : 'border-white/10'
-                  } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 transition-all duration-200`}
+                  className={`w-full px-4 py-3 pr-12 bg-gray-800/50 border ${errors.password ? 'border-red-500/60' : 'border-white/10'
+                    } rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500/50 transition-all duration-200`}
                   placeholder="••••••••"
                 />
                 <button

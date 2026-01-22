@@ -170,7 +170,7 @@ const InputView = ({ setViewState, setAnalysisData, onAnalysisComplete, setJobDe
         formData.append('jdTitle', jobTitle);
       }
 
-      const response = await axios.post('http://localhost:3000/analysis', formData, {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/analysis`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -698,7 +698,7 @@ const JobSearchSection = ({ jobDescription, jobTitle }) => {
         return;
       }
 
-      const response = await axios.post('http://localhost:3000/jobs/search', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/jobs/search`, {
         jobDescription: jobDescription,
         limit: 10
       }, {
@@ -964,7 +964,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:3000/analysis/history', {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/analysis/history`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -989,7 +989,7 @@ const Dashboard = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:3000/analysis/stats', {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/analysis/stats`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

@@ -25,12 +25,12 @@ const EditProfile = () => {
           return;
         }
 
-        const response = await axios.get('http://localhost:3000/user/profile', {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/profile`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
-        }); 
-        
+        });
+
         if (response.data.success && response.data.user) {
           setFormData({
             firstName: response.data.user.firstname || '',
@@ -68,28 +68,28 @@ const EditProfile = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
-    
+
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     }
-    
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Invalid email address';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       setIsLoading(true);
       try {
@@ -99,7 +99,7 @@ const EditProfile = () => {
           return;
         }
 
-        const response = await axios.post('http://localhost:3000/user/update', {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/update`, {
           firstname: formData.firstName,
           lastname: formData.lastName
         }, {
@@ -107,8 +107,8 @@ const EditProfile = () => {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
-        }); 
-        
+        });
+
         if (response.data.success) {
           alert('Profile updated successfully!');
           navigate('/user/profile');
@@ -119,7 +119,7 @@ const EditProfile = () => {
         console.error('Error updating profile:', error);
         const errorMessage = error.response?.data?.message || 'Failed to update profile. Please try again.';
         alert(errorMessage);
-        
+
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
           navigate('/user/signin');
@@ -144,14 +144,14 @@ const EditProfile = () => {
   return (
     // Clean Dark Mode Background
     <div className="bg-gray-900 min-h-screen flex items-center justify-center p-4">
-     
+
       {/* Elevated Form Card */}
       <div className="w-full max-w-lg bg-gray-800 rounded-xl p-8 sm:p-12 shadow-2xl border border-gray-700/50">
-        
+
         <h2 className="text-4xl font-bold text-cyan-400 text-center mb-8 border-b border-gray-700 pb-4">
           ⚙️ Edit Profile Details
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
 
           {/* First Name Field */}
@@ -164,9 +164,8 @@ const EditProfile = () => {
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className={`w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${
-                errors.firstName ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${errors.firstName ? 'border-red-500' : ''
+                }`}
               placeholder="Enter first name"
             />
             {errors.firstName && (
@@ -184,9 +183,8 @@ const EditProfile = () => {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className={`w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${
-                errors.lastName ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${errors.lastName ? 'border-red-500' : ''
+                }`}
               placeholder="Enter last name"
             />
             {errors.lastName && (
@@ -204,16 +202,15 @@ const EditProfile = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className={`w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${
-                errors.email ? 'border-red-500' : ''
-              }`}
+              className={`w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all ${errors.email ? 'border-red-500' : ''
+                }`}
               placeholder="Enter email address"
             />
             {errors.email && (
               <p className="text-red-400 text-sm mt-1">{errors.email}</p>
             )}
           </div>
-          
+
           {/* Divider and Password Notice */}
           <div className="border-t border-gray-700 pt-6 text-center">
             <p className="text-sm text-slate-400">

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { 
-  User, Lock, Trash2, Save, X, AlertTriangle, CheckCircle, 
-  Eye, EyeOff, Settings as SettingsIcon, ArrowLeft 
+import {
+  User, Lock, Trash2, Save, X, AlertTriangle, CheckCircle,
+  Eye, EyeOff, Settings as SettingsIcon, ArrowLeft
 } from 'lucide-react';
 
 const Settings = () => {
@@ -45,7 +45,7 @@ const Settings = () => {
         return;
       }
 
-      const response = await axios.get('http://localhost:3000/user/profile', {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/profile`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -70,7 +70,7 @@ const Settings = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await axios.get('http://localhost:3000/analysis/history', {
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/analysis/history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -95,7 +95,7 @@ const Settings = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3000/user/update', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/update`, {
         firstname: userData.firstname.trim(),
         lastname: userData.lastname.trim()
       }, {
@@ -139,7 +139,7 @@ const Settings = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3000/user/update', {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/user/update`, {
         password: passwordData.newPassword
       }, {
         headers: { Authorization: `Bearer ${token}` }
@@ -166,7 +166,7 @@ const Settings = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:3000/analysis/history/delete', 
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/analysis/history/delete`,
         analysisId ? { analysisId } : {},
         {
           headers: { Authorization: `Bearer ${token}` }
@@ -174,8 +174,8 @@ const Settings = () => {
       );
 
       if (response.data.success) {
-        setSuccessMessage(analysisId 
-          ? 'Analysis deleted successfully!' 
+        setSuccessMessage(analysisId
+          ? 'Analysis deleted successfully!'
           : `Deleted ${response.data.deletedCount} analysis records`
         );
         setDeleteConfirm(null);
@@ -246,11 +246,10 @@ const Settings = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${
-                      activeTab === tab.id
-                        ? 'bg-blue-600/50 text-white border border-blue-500/30'
-                        : 'text-gray-300 hover:bg-gray-700/50'
-                    }`}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-colors ${activeTab === tab.id
+                      ? 'bg-blue-600/50 text-white border border-blue-500/30'
+                      : 'text-gray-300 hover:bg-gray-700/50'
+                      }`}
                   >
                     <Icon className="w-5 h-5" />
                     <span>{tab.label}</span>

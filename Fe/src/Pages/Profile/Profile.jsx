@@ -21,13 +21,13 @@ const UserProvider = ({ children }) => {
         console.error('No token found');
         return;
       }
-      
-      const { data } = await axios.get('http://localhost:3000/user/profile', {
+
+      const { data } = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/user/profile`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      }); 
-      
+      });
+
       if (data.success && data.user) {
         setFirstName(data.user.firstname || '');
         setLastName(data.user.lastname || '');
@@ -102,10 +102,10 @@ const ProfileContent = () => {
 
         {/* New Two-Column Layout (Switches to stack on small screens) */}
         <div className="flex flex-col lg:flex-row gap-8">
-          
+
           {/* LEFT COLUMN (Profile/Sidebar) - 1/3 Width */}
           <div className="lg:w-1/3 p-6 bg-gray-800/50 border border-white/10 rounded-xl shadow-2xl h-fit">
-            
+
             {/* Profile Header */}
             <div className="text-center mb-6">
               {/* Profile Picture Placeholder (First initial of name) */}
@@ -121,7 +121,7 @@ const ProfileContent = () => {
             {/* Account Details Section */}
             <div className="mt-8 space-y-4">
               <h3 className="text-xl font-bold border-b border-blue-500 pb-2 mb-4">Account Details</h3>
-              
+
               <DataRow label="First Name" value={firstName || 'John'} />
               <DataRow label="Last Name" value={lastName || 'Doe'} />
               <DataRow label="Email" value={email || 'john@example.com'} />
@@ -143,10 +143,10 @@ const ProfileContent = () => {
               </button>
             </div>
           </div>
-          
+
           {/* RIGHT COLUMN (Content Area) - 2/3 Width */}
           <div className="lg:w-2/3 space-y-8">
-            
+
             {/* Quick Actions */}
             <div className="bg-gray-800/50 border border-white/10 p-6 rounded-xl shadow-2xl">
               <h3 className="text-2xl font-bold mb-4 text-blue-400">
